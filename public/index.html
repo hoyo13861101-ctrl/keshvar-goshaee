@@ -1001,7 +1001,15 @@ function startPolling(){
 }
 
 // اگه این مرورگر قبلاً توی یه بازی بوده (رفرش شده یا تب بسته شده)، خودکار برش‌گردون وسط همون بازی
-async function tryAutoResume(){
+async function tryAutoResume(const s = await loadRoom(lastCode);
+if (!s) return false;
+
+// اگر بازی تمام شده Resume نکن
+if (s.phase === "finished") {
+    localStorage.removeItem("lastCode");
+    localStorage.removeItem("myid-" + lastCode);
+    return false;
+}){
   let lastCode;
   try{ lastCode = localStorage.getItem('lastCode'); }catch(e){ return false; }
   if(!lastCode) return false;
