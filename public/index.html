@@ -972,34 +972,18 @@ function renderModals(wrap){
     m.querySelector('#gX').onclick=()=>{ ui.actionMode=null; ui.giftFromCity=null; render(); };
     wrap.appendChild(m);
   }
+}
+
 function renderWinner(){
   const w = state.winnerId ? playerById(state.winnerId) : null;
-
-  const page = el(`<div class="card winner-screen">
+  return el(`<div class="card winner-screen">
     <div class="crown">👑</div>
-
-    <h1 class="main-title">
-      ${w ? w.name + ' برنده شد!' : 'بازی بدون برنده پایان یافت'}
-    </h1>
-
-    ${w ? `<div class="small">پایتخت: ${w.capital}</div>` : ''}
-
-    <div class="btn-row" style="justify-content:center;margin:20px 0;">
-      <button class="btn btn-gold" id="newGameBtn">
-        🎮 بازی جدید
-      </button>
-    </div>
-
+    <h1 class="main-title">${w? w.name+' برنده شد!' : 'بازی بدون برنده پایان یافت'}</h1>
+    ${w?`<div class="small">پایتخت: ${w.capital}</div>`:''}
     <div class="log-box" style="margin:20px auto;max-width:420px;text-align:right">
       ${[...state.log].slice(-30).reverse().map(l=>`<div class="log-line">${l.text}</div>`).join('')}
     </div>
   </div>`);
-
-  page.querySelector("#newGameBtn").onclick = () => {
-    leaveSession();
-  };
-
-  return page;
 }
 
 /* ===================== POLLING ===================== */
@@ -1026,11 +1010,6 @@ async function tryAutoResume(){
   const s = await loadRoom(lastCode);
   if(!s) return false;
   if(!s.players.some(p=>p.id===savedId)) return false;
-  if(s.phase === "ended"){
-  localStorage.removeItem("lastCode");
-  localStorage.removeItem("myid-" + lastCode);
-  return false;
-}
   code = lastCode; myId = savedId; state = s;
   view = (s.phase==='lobby') ? 'lobby' : 'game';
   startPolling();
