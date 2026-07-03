@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>کشورگشایی</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --bg-wood:#241a12;
+  --bg-panel:#332619;
+  --bg-panel-2:#3d2e1e;
+  --parchment:#e9dcb8;
+  --parchment-dark:#d8c896;
+  --ink:#2a2015;
+  --gold:#c9a34e;
+  --gold-bright:#e6c168;
+  --border:#5a4326;
+  --danger:#a83c34;
+  --ok:#4c7a4a;
+  --muted:#a08a63;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:
+    radial-gradient(ellipse at 20% 0%, #3a2c1c 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 100%, #2e2314 0%, transparent 55%),
+    var(--bg-wood);
+  color:var(--parchment);
+  font-family:'Vazirmatn',sans-serif;
+  min-height:100vh;
+}
+h1,h2,h3,.display{font-family:'Cinzel','Vazirmatn',serif; letter-spacing:.5px;}
+#app{max-width:1180px;margin:0 auto;padding:18px 14px 60px;}
+
+.card{
+  background:linear-gradient(180deg,var(--bg-panel),var(--bg-panel-2));
+  border:1px solid var(--border);
+  border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.03);
+  padding:20px;
+}
+.title-row{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px;}
+.crown{font-size:26px;}
+h1.main-title{font-size:30px;color:var(--gold-bright);text-align:center;margin:6px 0 2px;text-shadow:0 2px 6px rgba(0,0,0,.5);}
+.subtitle{text-align:center;color:var(--muted);font-size:13px;margin-bottom:22px;}
+
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px;}
+input[type=text],select{
+  width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);
+  background:#1c140d;color:var(--parchment);font-family:inherit;font-size:14px;outline:none;
+}
+input[type=text]:focus,select:focus{border-color:var(--gold);}
+.btn{
+  cursor:pointer;border:1px solid var(--border);border-radius:8px;padding:10px 16px;
+  background:linear-gradient(180deg,#4a3620,#382712);color:var(--parchment);font-family:inherit;
+  font-size:14px;font-weight:600;transition:.15s;
+}
+.btn:hover:not(:disabled){border-color:var(--gold);transform:translateY(-1px);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-gold{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#241a12;border-color:#8a6d2f;}
+.btn-danger{background:linear-gradient(180deg,#c1544a,#8a332b);color:#fff0ec;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+.small{font-size:12px;color:var(--muted);}
+.hint{font-size:12px;color:var(--muted);margin-top:4px;}
+
+.tabs{display:flex;gap:6px;margin-bottom:10px;}
+.tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);cursor:pointer;font-size:13px;color:var(--muted);}
+.tab.active{background:var(--gold);color:#241a12;border-color:var(--gold);font-weight:700;}
+
+.color-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.swatch{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;}
+.swatch.selected{border-color:#fff;box-shadow:0 0 0 2px var(--gold);}
+.swatch.taken{opacity:.25;cursor:not-allowed;}
+
+.lobby-players{display:flex;flex-direction:column;gap:8px;margin:14px 0;}
+.lobby-player{display:flex;align-items:center;gap:10px;background:#1c140d;padding:8px 12px;border-radius:8px;border:1px solid var(--border);}
+.dot{width:16px;height:16px;border-radius:50%;flex:none;}
+.code-display{
+  text-align:center;font-size:34px;letter-spacing:6px;color:var(--gold-bright);
+  font-family:'Cinzel',serif;font-weight:700;margin:6px 0 2px;
+}
+
+/* game screen */
+.top-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.turn-banner{
+  background:linear-gradient(180deg,var(--bg-panel-2),var(--bg-panel));border:1px solid var(--border);
+  border-radius:10px;padding:10px 16px;display:flex;align-items:center;gap:10px;
+}
+.turn-banner .dot{width:14px;height:14px;}
+.players-strip{display:flex;gap:8px;flex-wrap:wrap;}
+.player-chip{
+  display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:20px;border:1px solid var(--border);
+  background:#1c140d;font-size:12px;
+}
+.player-chip.dead{opacity:.35;text-decoration:line-through;}
+.player-chip.current{box-shadow:0 0 0 2px var(--gold-bright);}
+
+.layout{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+.map-wrap{flex:1;min-width:320px;}
+.side-panel{width:300px;flex:none;display:flex;flex-direction:column;gap:12px;}
+
+.map-card{background:var(--parchment);border-radius:12px;padding:14px;border:6px solid #6b4c28;box-shadow:inset 0 0 30px rgba(0,0,0,.25),0 10px 30px rgba(0,0,0,.5);}
+.city-label{font-family:'Vazirmatn';font-size:10px;fill:var(--ink);font-weight:700;}
+.city-rect{stroke:#2a2015;stroke-width:2;cursor:pointer;}
+.city-rect.selectable{stroke:#fff;stroke-width:3;filter:drop-shadow(0 0 4px #fff8);}
+.city-rect.selected{stroke:#ffe98a;stroke-width:4;}
+.city-icon{font-size:14px;}
+
+.action-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.action-btns .btn{width:100%;font-size:13px;padding:9px 6px;}
+.log-box{
+  background:#1c140d;border:1px solid var(--border);border-radius:8px;padding:8px 10px;
+  height:190px;overflow-y:auto;font-size:12.5px;display:flex;flex-direction:column;gap:5px;
+}
+.log-line{color:var(--muted);border-bottom:1px dashed #3a2c1c;padding-bottom:4px;}
+.log-line b{color:var(--parchment);}
+.chat-input-row{display:flex;gap:6px;margin-top:6px;}
+.chat-input-row input{flex:1;}
+.emoji-row{display:flex;gap:6px;margin-top:6px;}
+.emoji-row button{background:none;border:1px solid var(--border);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;}
+.modal{background:linear-gradient(180deg,var(--bg-panel-2),var(--bg-panel));border:1px solid var(--gold);border-radius:12px;padding:22px;max-width:420px;width:100%;text-align:center;}
+.rps-row{display:flex;gap:14px;justify-content:center;margin-top:16px;}
+.rps-btn{font-size:40px;background:#1c140d;border:2px solid var(--border);border-radius:14px;width:76px;height:76px;cursor:pointer;}
+.rps-btn:hover{border-color:var(--gold);}
+.banner-wait{background:#1c140d;border:1px dashed var(--gold);border-radius:8px;padding:10px;font-size:13px;text-align:center;margin-bottom:10px;}
+
+.winner-screen{text-align:center;padding:50px 20px;}
+.winner-screen .crown{font-size:70px;}
+
+.footnote{font-size:11px;color:var(--muted);margin-top:26px;line-height:1.9;border-top:1px solid var(--border);padding-top:12px;}
+@media(max-width:760px){.side-panel{width:100%;}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ===================== STORAGE HELPERS (talk to our own Railway server) ===================== */
+async function apiGet(key){
+  try{
+    const r = await fetch('/api/state/'+encodeURIComponent(key));
+    if(!r.ok) return null;
+    const d = await r.json();
+    return d.value;
+  }catch(e){ return null; }
+}
+async function apiSet(key,value){
+  try{
+    await fetch('/api/state/'+encodeURIComponent(key),{
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({value})
+    });
+  }catch(e){ console.error(e); }
+}
+async function loadRoom(code){
+  const v = await apiGet('room-'+code);
+  return v || null;
+}
+async function saveRoom(state){
+  state.updatedAt = Date.now();
+  await apiSet('room-'+state.code, state);
+}
+async function saveMyId(code,id){
+  try{ localStorage.setItem('myid-'+code, id); }catch(e){}
+}
+async function loadMyId(code){
+  try{ return localStorage.getItem('myid-'+code); }catch(e){ return null; }
+}
+
+/* ===================== CONSTANTS ===================== */
+const COLORS = [
+  {hex:'#b23a34',name:'قرمز'},
+  {hex:'#2f5f8a',name:'آبی'},
+  {hex:'#4c7a4a',name:'سبز'},
+  {hex:'#6b4c8a',name:'بنفش'},
+  {hex:'#c07a2e',name:'نارنجی'}
+];
+const RPS = [
+  {k:'rock', icon:'🪨', label:'سنگ'},
+  {k:'paper', icon:'📄', label:'کاغذ'},
+  {k:'scissors', icon:'✂️', label:'قیچی'}
+];
+function rpsWinner(a,b){
+  if(a===b) return 'tie';
+  if((a==='rock'&&b==='scissors')||(a==='scissors'&&b==='paper')||(a==='paper'&&b==='rock')) return 'a';
+  return 'b';
+}
+function genCode(){ return String(Math.floor(100000+Math.random()*900000)); }
+function uid(){ return Math.random().toString(36).slice(2,10); }
+
+/* ===================== APP STATE (local/session only) ===================== */
+let view = 'landing'; // landing | create | join | lobby | game
+let code = null;
+let myId = null;
+let state = null; // synced game state
+let pollTimer = null;
+
+// transient UI state
+let ui = {
+  setupName:'', setupCapital:'', setupColor:null, joinCode:'', maxPlayers:3,
+  actionMode:null, // 'attack-src' | 'attack-tgt' | 'build-src' | 'build-choose' | 'bridge-tgt' | 'gift-src' | 'gift-choose'
+  selectedCity:null,
+  giftFromCity:null,
+  activeTab:'log',
+  chatText:''
+};
+
+function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstElementChild; }
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  let node;
+  if(view==='landing') node = renderLanding();
+  else if(view==='create') node = renderCreate();
+  else if(view==='join') node = renderJoin();
+  else if(view==='join-form') node = renderJoinForm();
+  else if(view==='lobby') node = renderLobby();
+  else if(view==='game') node = renderGame();
+  app.appendChild(node);
+}
+
+/* ===================== LANDING ===================== */
+function renderLanding(){
+  const c = el(`<div class="card">
+    <div class="title-row"><span class="crown">🏰</span></div>
+    <h1 class="main-title">کِشورگُشایی</h1>
+    <div class="subtitle">نبرد سرزمین‌ها با سنگ، کاغذ، قیچی — ۲ تا ۵ بازیکن، آنلاین</div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-gold" id="btnNew">ساخت بازی جدید</button>
+      <button class="btn" id="btnJoin">پیوستن با کد اتاق</button>
+    </div>
+  </div>`);
+  c.querySelector('#btnNew').onclick=()=>{view='create';render();};
+  c.querySelector('#btnJoin').onclick=()=>{view='join';render();};
+  return c;
+}
+
+/* ===================== CREATE ===================== */
+function renderCreate(){
+  const c = el(`<div class="card">
+    <h2 class="display" style="text-align:center;color:var(--gold-bright)">ساخت اتاق جدید</h2>
+    <label>تعداد بازیکنان (۲ تا ۵)</label>
+    <select id="maxP">
+      <option value="2">۲ نفر</option>
+      <option value="3" selected>۳ نفر (پیش‌فرض)</option>
+      <option value="4">۴ نفر</option>
+      <option value="5">۵ نفر</option>
+    </select>
+    <label>اسم کشور تو</label>
+    <input type="text" id="cName" placeholder="مثلاً: پارسیا">
+    <label>اسم پایتخت</label>
+    <input type="text" id="cCap" placeholder="مثلاً: تخت‌جمشید">
+    <label>رنگ کشور</label>
+    <div class="color-swatches" id="swatches"></div>
+    <div class="btn-row">
+      <button class="btn btn-gold" id="go">ساخت اتاق</button>
+      <button class="btn" id="back">بازگشت</button>
+    </div>
+  </div>`);
+  const sw = c.querySelector('#swatches');
+  COLORS.forEach(col=>{
+    const s = el(`<div class="swatch" style="background:${col.hex}" title="${col.name}"></div>`);
+    s.onclick=()=>{ ui.setupColor=col.hex; render(); };
+    sw.appendChild(s);
+  });
+  if(ui.setupColor){
+    [...sw.children].forEach(ch=>{ if(ch.style.background && rgbToHex(ch.style.backgroundColor)===ui.setupColor) ch.classList.add('selected'); });
+  }
+  c.querySelector('#cName').value = ui.setupName;
+  c.querySelector('#cCap').value = ui.setupCapital;
+  c.querySelector('#cName').oninput = e=>ui.setupName=e.target.value;
+  c.querySelector('#cCap').oninput = e=>ui.setupCapital=e.target.value;
+  c.querySelector('#maxP').onchange = e=>ui.maxPlayers=parseInt(e.target.value);
+  c.querySelector('#maxP').value = ui.maxPlayers;
+  c.querySelector('#back').onclick=()=>{view='landing';render();};
+  c.querySelector('#go').onclick= async ()=>{
+    if(!ui.setupName.trim()||!ui.setupCapital.trim()||!ui.setupColor){ alert('لطفاً اسم کشور، پایتخت و رنگ را انتخاب کن'); return; }
+    code = genCode();
+    myId = uid();
+    const newState = {
+      code, phase:'lobby', maxPlayers: ui.maxPlayers, hostId: myId,
+      players:[{id:myId, name:ui.setupName.trim(), capital:ui.setupCapital.trim(), color:ui.setupColor, alive:true}],
+      cities:[], currentPlayerIndex:0, turnCount:0,
+      usedAttackThisTurn:false, usedBuildThisTurn:false,
+      pendingBattle:null, log:[], chat:[], winnerId:null, version:0
+    };
+    state = newState;
+    await saveMyId(code, myId);
+    await saveRoom(state);
+    view='lobby'; startPolling(); render();
+  };
+  return c;
+}
+function rgbToHex(rgb){
+  const m = rgb.match(/\d+/g); if(!m) return null;
+  return '#'+m.slice(0,3).map(n=>parseInt(n).toString(16).padStart(2,'0')).join('');
+}
+
+/* ===================== JOIN ===================== */
+function renderJoin(){
+  const c = el(`<div class="card">
+    <h2 class="display" style="text-align:center;color:var(--gold-bright)">پیوستن به اتاق</h2>
+    <label>کد اتاق (۶ رقمی)</label>
+    <input type="text" id="jc" placeholder="مثلاً 482913" maxlength="6">
+    <div class="btn-row">
+      <button class="btn btn-gold" id="go">ادامه</button>
+      <button class="btn" id="back">بازگشت</button>
+    </div>
+    <div class="hint" id="err" style="color:#e88;"></div>
+  </div>`);
+  c.querySelector('#jc').value = ui.joinCode;
+  c.querySelector('#jc').oninput = e=>ui.joinCode=e.target.value.trim();
+  c.querySelector('#back').onclick=()=>{view='landing';render();};
+  c.querySelector('#go').onclick= async ()=>{
+    const s = await loadRoom(ui.joinCode);
+    if(!s){ c.querySelector('#err').textContent='اتاقی با این کد پیدا نشد.'; return; }
+    if(s.phase!=='lobby'){ c.querySelector('#err').textContent='این بازی قبلاً شروع شده است.'; return; }
+    if(s.players.length>=s.maxPlayers){ c.querySelector('#err').textContent='اتاق پر است.'; return; }
+    code = ui.joinCode; state = s;
+    view='join-form'; render();
+  };
+  if(view==='join-form') return renderJoinForm();
+  return c;
+}
+function renderJoinForm(){
+  const takenColors = state.players.map(p=>p.color);
+  const c = el(`<div class="card">
+    <h2 class="display" style="text-align:center;color:var(--gold-bright)">پیوستن به اتاق ${code}</h2>
+    <div class="small" style="text-align:center;margin-bottom:8px;">بازیکنان فعلی: ${state.players.map(p=>p.name).join('، ')||'—'}</div>
+    <label>اسم کشور تو</label>
+    <input type="text" id="cName" placeholder="مثلاً: پارسیا">
+    <label>اسم پایتخت</label>
+    <input type="text" id="cCap" placeholder="مثلاً: تخت‌جمشید">
+    <label>رنگ کشور</label>
+    <div class="color-swatches" id="swatches"></div>
+    <div class="btn-row">
+      <button class="btn btn-gold" id="go">پیوستن</button>
+      <button class="btn" id="back">بازگشت</button>
+    </div>
+  </div>`);
+  const sw = c.querySelector('#swatches');
+  COLORS.forEach(col=>{
+    const taken = takenColors.includes(col.hex);
+    const s = el(`<div class="swatch ${taken?'taken':''} ${ui.setupColor===col.hex?'selected':''}" style="background:${col.hex}" title="${col.name}"></div>`);
+    if(!taken) s.onclick=()=>{ ui.setupColor=col.hex; render(); };
+    sw.appendChild(s);
+  });
+  c.querySelector('#cName').value = ui.setupName;
+  c.querySelector('#cCap').value = ui.setupCapital;
+  c.querySelector('#cName').oninput = e=>ui.setupName=e.target.value;
+  c.querySelector('#cCap').oninput = e=>ui.setupCapital=e.target.value;
+  c.querySelector('#back').onclick=()=>{view='landing';render();};
+  c.querySelector('#go').onclick= async ()=>{
+    if(!ui.setupName.trim()||!ui.setupCapital.trim()||!ui.setupColor){ alert('لطفاً همه فیلدها را پر کن'); return; }
+    const fresh = await loadRoom(code);
+    if(!fresh || fresh.phase!=='lobby' || fresh.players.length>=fresh.maxPlayers){ alert('اتاق دیگر در دسترس نیست.'); view='landing'; render(); return; }
+    myId = uid();
+    fresh.players.push({id:myId,name:ui.setupName.trim(),capital:ui.setupCapital.trim(),color:ui.setupColor,alive:true});
+    fresh.version++;
+    state = fresh;
+    await saveMyId(code, myId);
+    await saveRoom(state);
+    view='lobby'; startPolling(); render();
+  };
+  return c;
+}
+
+/* ===================== LOBBY ===================== */
+function renderLobby(){
+  const isHost = myId===state.hostId;
+  const c = el(`<div class="card">
+    <h2 class="display" style="text-align:center;color:var(--gold-bright)">در انتظار بازیکنان...</h2>
+    <div class="code-display">${code}</div>
+    <div class="small" style="text-align:center;">این کد را با دوستانت به اشتراک بگذار</div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn" id="copyLink">📋 کپی لینک دعوت</button>
+    </div>
+    <div class="lobby-players" id="plist"></div>
+    <div class="small" style="text-align:center;">${state.players.length} از ${state.maxPlayers} بازیکن</div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-gold" id="startBtn" ${(!isHost || state.players.length<2)?'disabled':''}>شروع بازی</button>
+    </div>
+    ${!isHost?'<div class="hint" style="text-align:center">فقط سازنده اتاق می‌تواند بازی را شروع کند.</div>':''}
+  </div>`);
+  c.querySelector('#copyLink').onclick = ()=>{
+    const link = window.location.origin + window.location.pathname + '?code='+code;
+    navigator.clipboard?.writeText(link).then(()=>alert('لینک دعوت کپی شد:\n'+link)).catch(()=>alert(link));
+  };
+  const pl = c.querySelector('#plist');
+  state.players.forEach(p=>{
+    pl.appendChild(el(`<div class="lobby-player"><div class="dot" style="background:${p.color}"></div><div><b>${p.name}</b> — پایتخت: ${p.capital} ${p.id===state.hostId?'👑':''} ${p.id===myId?'(تو)':''}</div></div>`));
+  });
+  if(isHost){
+    c.querySelector('#startBtn').onclick = async ()=>{
+      startGame();
+      await saveRoom(state);
+      view='game'; render();
+    };
+  }
+  return c;
+}
+
+/* ===================== MAP GENERATION ===================== */
+function buildMap(players){
+  const n = players.length;
+  const width = n*2, height=2;
+  const cities=[];
+  for(let row=0; row<height; row++){
+    for(let col=0; col<width; col++){
+      const pIndex = Math.floor(col/2);
+      const owner = players[pIndex].id;
+      const isCapital = (row===0 && col===pIndex*2);
+      cities.push({
+        id:'r'+row+'c'+col, row, col, ownerId: owner, isCapital,
+        hasCastle:false, hasDock:false, construction:null, bridges:[]
+      });
+    }
+  }
+  return {cities, width, height};
+}
+function startGame(){
+  const {cities,width,height} = buildMap(state.players);
+  state.cities = cities;
+  state.mapWidth = width; state.mapHeight = height;
+  state.phase='playing';
+  state.currentPlayerIndex=0;
+  state.turnCount=1;
+  state.usedAttackThisTurn=false;
+  state.usedBuildThisTurn=false;
+  state.pendingBattle=null;
+  state.log=[{turn:0,text:'🏳️ بازی «کِشورگُشایی» آغاز شد. نوبت اول با '+state.players[0].name+' است.'}];
+  state.chat=[];
+  state.winnerId=null;
+  state.version = (state.version||0)+1;
+}
+
+/* ===================== GAME HELPERS ===================== */
+function cityById(id){ return state.cities.find(c=>c.id===id); }
+function playerById(id){ return state.players.find(p=>p.id===id); }
+function currentPlayer(){ return state.players[state.currentPlayerIndex]; }
+function isMyTurn(){ return currentPlayer() && currentPlayer().id===myId; }
+
+function landNeighbors(city){
+  const res=[];
+  const dirs=[[0,1],[0,-1],[1,0],[-1,0]];
+  dirs.forEach(([dr,dc])=>{
+    const n = state.cities.find(c=>c.row===city.row+dr && c.col===city.col+dc);
+    if(n) res.push(n);
+  });
+  (city.bridges||[]).forEach(bid=>{ const n=cityById(bid); if(n) res.push(n); });
+  return res;
+}
+function attackTargets(city){
+  const targets = new Map();
+  landNeighbors(city).forEach(n=>{ if(n.ownerId!==city.ownerId) targets.set(n.id,n); });
+  if(city.hasDock){
+    state.cities.forEach(c=>{ if(c.hasDock && c.ownerId!==city.ownerId) targets.set(c.id,c); });
+  }
+  return [...targets.values()];
+}
+function myCities(){ return state.cities.filter(c=>c.ownerId===myId); }
+function cityCount(pid){ return state.cities.filter(c=>c.ownerId===pid).length; }
+
+function checkElimination(){
+  state.players.forEach(p=>{
+    if(p.alive && cityCount(p.id)===0){
+      p.alive=false;
+      state.log.push({turn:state.turnCount, text:'💀 '+p.name+' تمام سرزمین‌های خود را از دست داد و از بازی حذف شد.'});
+    }
+  });
+  const aliveP = state.players.filter(p=>p.alive);
+  if(aliveP.length<=1 && state.phase==='playing'){
+    state.phase='ended';
+    state.winnerId = aliveP.length===1 ? aliveP[0].id : null;
+    state.log.push({turn:state.turnCount, text: aliveP.length===1 ? '👑 '+aliveP[0].name+' برنده نهایی بازی شد!' : '🏳️ بازی بدون برنده به پایان رسید.'});
+  }
+}
+
+function advanceConstructions(){
+  state.cities.forEach(c=>{
+    if(c.construction){
+      c.construction.remaining -= 1;
+      if(c.construction.remaining<=0){
+        if(c.construction.type==='castle'){ c.hasCastle=true; state.log.push({turn:state.turnCount,text:'🏰 ساخت قلعه در '+cityDisplayName(c)+' به پایان رسید.'}); }
+        else if(c.construction.type==='dock'){ c.hasDock=true; state.log.push({turn:state.turnCount,text:'⚓ اسکله در '+cityDisplayName(c)+' آماده شد.'}); }
+        else if(c.construction.type==='bridge'){
+          const t = cityById(c.construction.targetCityId);
+          if(t){ c.bridges.push(t.id); t.bridges.push(c.id); }
+          state.log.push({turn:state.turnCount,text:'🌉 پل بین '+cityDisplayName(c)+' و '+cityDisplayName(t)+' ساخته شد.'});
+        }
+        c.construction=null;
+      }
+    }
+  });
+}
+function cityDisplayName(c){
+  const own = playerById(c.ownerId);
+  return (c.isCapital?'پایتخت ':'شهر ') + (own?own.name:'بی‌صاحب') + ' ['+(c.row+1)+','+(c.col+1)+']';
+}
+
+async function pushState(){
+  state.version=(state.version||0)+1;
+  await saveRoom(state);
+  render();
+}
+
+function nextTurn(){
+  advanceConstructions();
+  checkElimination();
+  if(state.phase!=='playing') return;
+  let idx = state.currentPlayerIndex;
+  for(let i=0;i<state.players.length;i++){
+    idx = (idx+1)%state.players.length;
+    if(state.players[idx].alive) break;
+  }
+  state.currentPlayerIndex = idx;
+  state.turnCount++;
+  state.usedAttackThisTurn=false;
+  state.usedBuildThisTurn=false;
+  state.log.push({turn:state.turnCount, text:'▶️ نوبت '+currentPlayer().name+' رسید.'});
+}
+
+/* ===================== ACTIONS ===================== */
+async function doAttack(srcId, tgtId, choice){
+  const src = cityById(srcId), tgt = cityById(tgtId);
+  state.pendingBattle = {
+    attackerCity:srcId, defenderCity:tgtId, attackerId:myId, defenderId:tgt.ownerId,
+    stage:1, attackerChoice:choice, defenderChoice:null
+  };
+  state.usedAttackThisTurn=true;
+  state.log.push({turn:state.turnCount, text:'⚔️ '+currentPlayer().name+' به '+cityDisplayName(tgt)+' حمله کرد. در انتظار پاسخ دفاعی...'});
+  ui.actionMode=null; ui.selectedCity=null;
+  await pushState();
+}
+async function doNeutralAttack(srcId,tgtId){
+  const tgt = cityById(tgtId);
+  tgt.ownerId = myId;
+  tgt.hasCastle=false;
+  state.usedAttackThisTurn=true;
+  state.log.push({turn:state.turnCount, text:'🏳️ '+currentPlayer().name+' سرزمین بی‌صاحب '+cityDisplayName(tgt)+' را تصرف کرد.'});
+  ui.actionMode=null; ui.selectedCity=null;
+  checkElimination();
+  await pushState();
+}
+async function submitDefense(choice){
+  const pb = state.pendingBattle;
+  pb.defenderChoice = choice;
+  resolveBattleStage();
+  await pushState();
+}
+function resolveBattleStage(){
+  const pb = state.pendingBattle;
+  const src = cityById(pb.attackerCity), tgt = cityById(pb.defenderCity);
+  const w = rpsWinner(pb.attackerChoice, pb.defenderChoice);
+  const atkP = playerById(pb.attackerId), defP = playerById(pb.defenderId);
+  if(w==='tie'){
+    state.log.push({turn:state.turnCount, text:'🤝 نبرد مساوی شد! دوباره سنگ‌کاغذقیچی...'});
+    pb.attackerChoice=null; pb.defenderChoice=null;
+    return;
+  }
+  const attackerWon = w==='a';
+  if(tgt.hasCastle && pb.stage===1){
+    if(attackerWon){
+      tgt.hasCastle=false;
+      state.log.push({turn:state.turnCount, text:'🏰💥 قلعه '+cityDisplayName(tgt)+' در ضربه اول تخریب شد! نبرد ادامه دارد...'});
+      pb.stage=2; pb.attackerChoice=null; pb.defenderChoice=null;
+      return;
+    } else {
+      state.log.push({turn:state.turnCount, text:'🛡️ حمله به '+cityDisplayName(tgt)+' توسط قلعه دفع شد!'});
+      state.pendingBattle=null;
+      return;
+    }
+  }
+  if(attackerWon){
+    tgt.ownerId = pb.attackerId;
+    state.log.push({turn:state.turnCount, text:'🚩 '+atkP.name+' شهر '+cityDisplayName(tgt)+' را تصرف کرد!'});
+  } else {
+    state.log.push({turn:state.turnCount, text:'🛡️ '+defP.name+' با موفقیت از '+cityDisplayName(tgt)+' دفاع کرد.'});
+  }
+  state.pendingBattle=null;
+  checkElimination();
+}
+async function startBuild(cityId, type, targetId){
+  const c = cityById(cityId);
+  const req = type==='castle'?2: type==='dock'?1: 3;
+  c.construction = {type, remaining: req-1, targetCityId: targetId||null};
+  state.usedBuildThisTurn=true;
+  const label = type==='castle'?'قلعه':type==='dock'?'اسکله':'پل';
+  state.log.push({turn:state.turnCount, text:'🏗️ '+currentPlayer().name+' ساخت '+label+' در '+cityDisplayName(c)+' را آغاز کرد.'});
+  ui.actionMode=null; ui.selectedCity=null;
+  await pushState();
+}
+async function doGift(cityId, targetPlayerId){
+  const c = cityById(cityId);
+  const from = playerById(c.ownerId), to = playerById(targetPlayerId);
+  c.ownerId = targetPlayerId;
+  state.log.push({turn:state.turnCount, text:'🎁 '+from.name+' شهر '+cityDisplayName(c)+' را به '+to.name+' هدیه داد.'});
+  ui.actionMode=null; ui.selectedCity=null; ui.giftFromCity=null;
+  checkElimination();
+  await pushState();
+}
+async function doSurrender(){
+  if(!confirm('آیا مطمئنی می‌خواهی تسلیم شوی؟ همه شهرهایت آزاد می‌شوند.')) return;
+  const me = playerById(myId);
+  me.alive=false;
+  state.cities.forEach(c=>{ if(c.ownerId===myId){ c.ownerId=null; c.hasCastle=false; c.construction=null; }});
+  state.log.push({turn:state.turnCount, text:'🏳️ '+me.name+' تسلیم شد و از بازی خارج شد.'});
+  if(isMyTurn()) nextTurn(); else checkElimination();
+  await pushState();
+}
+async function endTurn(){
+  nextTurn();
+  await pushState();
+}
+async function sendChat(){
+  if(!ui.chatText.trim()) return;
+  const me = playerById(myId);
+  state.chat.push({playerId:myId, name:me.name, color:me.color, text:ui.chatText.trim(), time:Date.now()});
+  ui.chatText='';
+  await pushState();
+}
+
+/* ===================== GAME RENDER ===================== */
+function renderGame(){
+  if(state.phase==='ended') return renderWinner();
+  const wrap = document.createElement('div');
+
+  // top bar
+  const cur = currentPlayer();
+  const top = el(`<div class="top-bar">
+    <div class="turn-banner"><div class="dot" style="background:${cur.color}"></div>
+      <div><b>${isMyTurn()?'نوبت توست!':'نوبت: '+cur.name}</b><div class="small">نوبت شماره ${state.turnCount} — کد اتاق: ${code}</div></div>
+    </div>
+    <div class="players-strip" id="pstrip"></div>
+  </div>`);
+  const strip = top.querySelector('#pstrip');
+  state.players.forEach((p,i)=>{
+    strip.appendChild(el(`<div class="player-chip ${!p.alive?'dead':''} ${i===state.currentPlayerIndex?'current':''}">
+      <div class="dot" style="background:${p.color}"></div>${p.name} (${cityCount(p.id)})</div>`));
+  });
+  wrap.appendChild(top);
+
+  const layout = el(`<div class="layout"></div>`);
+  layout.appendChild(renderMap());
+  layout.appendChild(renderSidePanel());
+  wrap.appendChild(layout);
+
+  wrap.appendChild(el(`<div class="footnote">
+    🪶 یادداشت طراح: در این نسخه، هر کاشتن دژ ۲ نوبت، اسکله ۱ نوبت و پل ۳ نوبت زمان می‌برد (طبق قانونی که تعیین کردی). چون بازی به‌صورت آنلاین و غیرهم‌زمان اجرا می‌شود، «نوبتِ ساخت» به‌صورت سراسری شمرده می‌شود، نه فقط نوبت‌های خودت — یعنی اگر شهر در حین ساخت دست عوض کند، مالک جدید آن را تحویل می‌گیرد. دفاع در هر لحظه (خارج از نوبت) قابل انجام است. تساوی در سنگ‌کاغذقیچی یعنی تکرار دوباره‌ی همان مرحله. حمله دریایی فقط بین دو شهر دارای اسکله ممکن است، حتی اگر همسایه نباشند. پل دائمی است و دو شهر را برای همیشه همسایه می‌کند.
+  </div>`));
+
+  renderModals(wrap);
+  return wrap;
+}
+
+function renderMap(){
+  const W = state.mapWidth, H = state.mapHeight;
+  const cellW=90, cellH=90, gap=10, pad=16;
+  const svgW = pad*2 + W*cellW + (W-1)*gap;
+  const svgH = pad*2 + H*cellH + (H-1)*gap;
+  let svg = `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" style="max-width:100%">`;
+  state.cities.forEach(c=>{
+    const x = pad + c.col*(cellW+gap);
+    const y = pad + c.row*(cellH+gap);
+    const owner = playerById(c.ownerId);
+    const fill = owner? owner.color : '#9c9276';
+    const selectable = isSelectableCity(c);
+    const selected = ui.selectedCity===c.id;
+    svg += `<g data-city="${c.id}" style="cursor:pointer">
+      <rect class="city-rect ${selectable?'selectable':''} ${selected?'selected':''}" x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="10" fill="${fill}" fill-opacity="0.88"/>
+      <text class="city-label" x="${x+cellW/2}" y="${y+18}" text-anchor="middle">${c.isCapital?'★ پایتخت':''}</text>
+      <text class="city-label" x="${x+cellW/2}" y="${y+cellH-10}" text-anchor="middle" style="font-size:9px">${owner?owner.name:'بی‌صاحب'}</text>
+      <text x="${x+14}" y="${y+cellH/2+6}" class="city-icon">${c.hasCastle?'🏰':''}</text>
+      <text x="${x+cellW-28}" y="${y+cellH/2+6}" class="city-icon">${c.hasDock?'⚓':''}</text>
+      ${c.construction?`<text x="${x+cellW/2}" y="${y+cellH/2+6}" class="city-icon" text-anchor="middle">⏳${c.construction.remaining+1}</text>`:''}
+    </g>`;
+  });
+  // bridges as lines
+  state.cities.forEach(c=>{
+    (c.bridges||[]).forEach(bid=>{
+      if(bid<c.id) return; // draw once
+      const t = cityById(bid);
+      const x1=pad+c.col*(cellW+gap)+cellW/2, y1=pad+c.row*(cellH+gap)+cellH/2;
+      const x2=pad+t.col*(cellW+gap)+cellW/2, y2=pad+t.row*(cellH+gap)+cellH/2;
+      svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#5a4326" stroke-width="4" stroke-dasharray="6,4"/>`;
+    });
+  });
+  svg += `</svg>`;
+  const card = el(`<div class="map-card">${svg}</div>`);
+  card.querySelectorAll('[data-city]').forEach(g=>{
+    g.onclick = ()=>handleCityClick(g.getAttribute('data-city'));
+  });
+  const outer = el(`<div class="map-wrap"></div>`);
+  outer.appendChild(card);
+  return outer;
+}
+
+function isSelectableCity(c){
+  if(!isMyTurn() || state.pendingBattle) return false;
+  if(ui.actionMode==='attack-src') return c.ownerId===myId && attackTargets(c).length>0 && !state.usedAttackThisTurn;
+  if(ui.actionMode==='attack-tgt') return attackTargets(cityById(ui.selectedCity)).some(t=>t.id===c.id);
+  if(ui.actionMode==='build-src') return c.ownerId===myId && !c.construction && !state.usedBuildThisTurn;
+  if(ui.actionMode==='bridge-tgt') return c.id!==ui.selectedCity && !(cityById(ui.selectedCity).bridges||[]).includes(c.id) && !landNeighbors(cityById(ui.selectedCity)).some(n=>n.id===c.id);
+  if(ui.actionMode==='gift-src') return c.ownerId===myId;
+  return false;
+}
+
+function handleCityClick(cid){
+  const c = cityById(cid);
+  if(ui.actionMode==='attack-src' && c.ownerId===myId){ ui.selectedCity=cid; ui.actionMode='attack-tgt'; render(); return; }
+  if(ui.actionMode==='attack-tgt'){
+    const src = cityById(ui.selectedCity);
+    if(!attackTargets(src).some(t=>t.id===cid)) return;
+    if(c.ownerId===null){ doNeutralAttack(ui.selectedCity, cid); return; }
+    ui.pendingAttackTarget = cid;
+    ui.showAttackChoice = true;
+    render();
+    return;
+  }
+  if(ui.actionMode==='build-src' && c.ownerId===myId){ ui.selectedCity=cid; ui.actionMode='build-choose'; render(); return; }
+  if(ui.actionMode==='bridge-tgt'){
+    if(!isSelectableCity(c)) return;
+    startBuild(ui.selectedCity,'bridge', cid);
+    return;
+  }
+  if(ui.actionMode==='gift-src' && c.ownerId===myId){ ui.giftFromCity=cid; ui.actionMode='gift-choose'; render(); return; }
+}
+
+function renderSidePanel(){
+  const panel = el(`<div class="side-panel"></div>`);
+  if(state.pendingBattle){
+    panel.appendChild(el(`<div class="banner-wait">⚔️ نبردی در جریان است — منتظر پاسخ دفاعی...</div>`));
+  }
+  if(isMyTurn() && !state.pendingBattle){
+    const actions = el(`<div class="card"><h3 class="display" style="font-size:16px;margin:0 0 10px;color:var(--gold-bright)">اقدامات نوبت تو</h3><div class="action-btns"></div></div>`);
+    const grid = actions.querySelector('.action-btns');
+    const atkBtn = el(`<button class="btn">⚔️ حمله</button>`);
+    atkBtn.disabled = state.usedAttackThisTurn;
+    atkBtn.onclick=()=>{ ui.actionMode = ui.actionMode==='attack-src'?null:'attack-src'; render(); };
+    const buildBtn = el(`<button class="btn">🏗️ ساخت‌وساز</button>`);
+    buildBtn.disabled = state.usedBuildThisTurn;
+    buildBtn.onclick=()=>{ ui.actionMode = ui.actionMode==='build-src'?null:'build-src'; render(); };
+    const giftBtn = el(`<button class="btn">🎁 هدیه شهر</button>`);
+    giftBtn.onclick=()=>{ ui.actionMode = ui.actionMode==='gift-src'?null:'gift-src'; render(); };
+    const surBtn = el(`<button class="btn btn-danger">🏳️ تسلیم</button>`);
+    surBtn.onclick=doSurrender;
+    grid.appendChild(atkBtn); grid.appendChild(buildBtn); grid.appendChild(giftBtn); grid.appendChild(surBtn);
+    const endBtn = el(`<button class="btn btn-gold" style="width:100%;margin-top:10px;">پایان نوبت ⏭️</button>`);
+    endBtn.onclick=endTurn;
+    actions.appendChild(endBtn);
+    if(ui.actionMode) actions.appendChild(el(`<div class="hint">${modeHint()}</div>`));
+    panel.appendChild(actions);
+  } else if(!state.pendingBattle){
+    panel.appendChild(el(`<div class="card"><div class="small">در انتظار نوبت خودت هستی. اگر کسی به تو حمله کند، بلافاصله باید دفاع کنی.</div></div>`));
+  }
+
+  // log / chat
+  const logCard = el(`<div class="card"></div>`);
+  const tabs = el(`<div class="tabs">
+    <div class="tab ${ui.activeTab==='log'?'active':''}" id="tabLog">رویدادها</div>
+    <div class="tab ${ui.activeTab==='chat'?'active':''}" id="tabChat">گفتگو</div>
+  </div>`);
+  tabs.querySelector('#tabLog').onclick=()=>{ui.activeTab='log';render();};
+  tabs.querySelector('#tabChat').onclick=()=>{ui.activeTab='chat';render();};
+  logCard.appendChild(tabs);
+  if(ui.activeTab==='log'){
+    const box = el(`<div class="log-box"></div>`);
+    [...state.log].slice(-60).reverse().forEach(l=>{
+      box.appendChild(el(`<div class="log-line">${l.text}</div>`));
+    });
+    logCard.appendChild(box);
+  } else {
+    const box = el(`<div class="log-box"></div>`);
+    [...state.chat].slice(-60).reverse().forEach(m=>{
+      box.appendChild(el(`<div class="log-line"><b style="color:${m.color}">${m.name}:</b> ${escapeHtml(m.text)}</div>`));
+    });
+    logCard.appendChild(box);
+    const row = el(`<div class="chat-input-row"><input type="text" id="chatIn" placeholder="پیام..."><button class="btn">ارسال</button></div>`);
+    row.querySelector('#chatIn').value = ui.chatText;
+    row.querySelector('#chatIn').oninput = e=>ui.chatText=e.target.value;
+    row.querySelector('#chatIn').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
+    row.querySelector('button').onclick = sendChat;
+    logCard.appendChild(row);
+    const emoji = el(`<div class="emoji-row"></div>`);
+    ['😂','😡','🔥','GG'].forEach(t=>{
+      const b = document.createElement('button'); b.textContent=t;
+      b.onclick=()=>{ ui.chatText=t; sendChat(); };
+      emoji.appendChild(b);
+    });
+    logCard.appendChild(emoji);
+  }
+  panel.appendChild(logCard);
+  return panel;
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function modeHint(){
+  if(ui.actionMode==='attack-src') return 'یک شهر خودی که هدف قابل حمله دارد را انتخاب کن (روی نقشه هایلایت شده).';
+  if(ui.actionMode==='attack-tgt') return 'حالا روی یکی از شهرهای هدف (هایلایت‌شده) کلیک کن.';
+  if(ui.actionMode==='build-src') return 'یک شهر خودی بدون ساخت‌وساز فعلی انتخاب کن.';
+  if(ui.actionMode==='build-choose') return 'نوع ساخت را از پنجره انتخاب کن.';
+  if(ui.actionMode==='bridge-tgt') return 'شهر مقصد پل (غیرهمسایه) را انتخاب کن.';
+  if(ui.actionMode==='gift-src') return 'شهری که می‌خواهی هدیه دهی را انتخاب کن.';
+  if(ui.actionMode==='gift-choose') return 'گیرنده هدیه را از پنجره انتخاب کن.';
+  return '';
+}
+
+function renderModals(wrap){
+  // attacker choice modal
+  if(ui.showAttackChoice){
+    const tgt = cityById(ui.pendingAttackTarget);
+    const m = el(`<div class="modal-bg"><div class="modal">
+      <h3 class="display" style="color:var(--gold-bright)">حمله به ${cityDisplayName(tgt)}</h3>
+      <div class="small">انتخاب خودت برای سنگ‌کاغذقیچی:</div>
+      <div class="rps-row" id="rpsRow"></div>
+      <button class="btn" id="cancelAtk" style="margin-top:14px">انصراف</button>
+    </div></div>`);
+    const row = m.querySelector('#rpsRow');
+    RPS.forEach(o=>{
+      const b = el(`<button class="rps-btn" title="${o.label}">${o.icon}</button>`);
+      b.onclick=()=>{ ui.showAttackChoice=false; doAttack(ui.selectedCity, ui.pendingAttackTarget, o.k); };
+      row.appendChild(b);
+    });
+    m.querySelector('#cancelAtk').onclick=()=>{ ui.showAttackChoice=false; ui.actionMode='attack-tgt'; render(); };
+    wrap.appendChild(m);
+  }
+  // defense modal
+  if(state.pendingBattle && state.pendingBattle.defenderId===myId && !state.pendingBattle.defenderChoice){
+    const pb = state.pendingBattle;
+    const tgt = cityById(pb.defenderCity);
+    const atkP = playerById(pb.attackerId);
+    const m = el(`<div class="modal-bg"><div class="modal">
+      <h3 class="display" style="color:var(--gold-bright)">${atkP.name} به ${cityDisplayName(tgt)} حمله کرد!</h3>
+      <div class="small">${pb.stage===2?'قلعه تخریب شد — نبرد ادامه دارد. ':''}باید همین الان دفاع کنی:</div>
+      <div class="rps-row" id="rpsRow"></div>
+    </div></div>`);
+    const row = m.querySelector('#rpsRow');
+    RPS.forEach(o=>{
+      const b = el(`<button class="rps-btn" title="${o.label}">${o.icon}</button>`);
+      b.onclick=()=>submitDefense(o.k);
+      row.appendChild(b);
+    });
+    wrap.appendChild(m);
+  }
+  // build choose modal
+  if(ui.actionMode==='build-choose'){
+    const c = cityById(ui.selectedCity);
+    const m = el(`<div class="modal-bg"><div class="modal">
+      <h3 class="display" style="color:var(--gold-bright)">ساخت‌وساز در ${cityDisplayName(c)}</h3>
+      <div class="btn-row" style="justify-content:center;flex-direction:column;align-items:stretch">
+        <button class="btn" id="bC">🏰 دژ (۲ نوبت)</button>
+        <button class="btn" id="bD">⚓ اسکله (۱ نوبت)</button>
+        <button class="btn" id="bB">🌉 پل (۳ نوبت)</button>
+        <button class="btn btn-danger" id="bX">انصراف</button>
+      </div>
+    </div></div>`);
+    m.querySelector('#bC').disabled = c.hasCastle;
+    m.querySelector('#bD').disabled = c.hasDock;
+    m.querySelector('#bC').onclick=()=>startBuild(c.id,'castle');
+    m.querySelector('#bD').onclick=()=>startBuild(c.id,'dock');
+    m.querySelector('#bB').onclick=()=>{ ui.actionMode='bridge-tgt'; render(); };
+    m.querySelector('#bX').onclick=()=>{ ui.actionMode=null; ui.selectedCity=null; render(); };
+    wrap.appendChild(m);
+  }
+  // gift choose modal
+  if(ui.actionMode==='gift-choose'){
+    const c = cityById(ui.giftFromCity);
+    const others = state.players.filter(p=>p.id!==myId && p.alive);
+    const m = el(`<div class="modal-bg"><div class="modal">
+      <h3 class="display" style="color:var(--gold-bright)">هدیه ${cityDisplayName(c)} به چه کسی؟</h3>
+      <div class="btn-row" style="justify-content:center;flex-direction:column;align-items:stretch" id="gl"></div>
+      <button class="btn btn-danger" id="gX" style="margin-top:10px">انصراف</button>
+    </div></div>`);
+    const gl = m.querySelector('#gl');
+    others.forEach(p=>{
+      const b = el(`<button class="btn">${p.name}</button>`);
+      b.onclick=()=>doGift(c.id,p.id);
+      gl.appendChild(b);
+    });
+    m.querySelector('#gX').onclick=()=>{ ui.actionMode=null; ui.giftFromCity=null; render(); };
+    wrap.appendChild(m);
+  }
+}
+
+function renderWinner(){
+  const w = state.winnerId ? playerById(state.winnerId) : null;
+  return el(`<div class="card winner-screen">
+    <div class="crown">👑</div>
+    <h1 class="main-title">${w? w.name+' برنده شد!' : 'بازی بدون برنده پایان یافت'}</h1>
+    ${w?`<div class="small">پایتخت: ${w.capital}</div>`:''}
+    <div class="log-box" style="margin:20px auto;max-width:420px;text-align:right">
+      ${[...state.log].slice(-30).reverse().map(l=>`<div class="log-line">${l.text}</div>`).join('')}
+    </div>
+  </div>`);
+}
+
+/* ===================== POLLING ===================== */
+function startPolling(){
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(async ()=>{
+    if(!code) return;
+    const fresh = await loadRoom(code);
+    if(fresh && (!state || fresh.version!==state.version)){
+      state = fresh;
+      if(state.phase==='playing'||state.phase==='ended') view='game';
+      render();
+    }
+  }, 2200);
+}
+
+// convenience: if the page is opened with ?code=XXXXXX (a shared invite link), jump straight to the join screen
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const c = params.get('code');
+  if(c && /^\d{6}$/.test(c)){ ui.joinCode = c; view = 'join'; }
+})();
+
+render();
+</script>
+</body>
+</html>
