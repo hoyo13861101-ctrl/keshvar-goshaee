@@ -1032,14 +1032,6 @@ function leaveSession(){
   if(!resumed && urlCode && /^\d{6}$/.test(urlCode)){ ui.joinCode = urlCode; view = 'join'; }
   render();
 })();
-  {
-  91:.top-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
-732:  const top = el(`<div class="top-bar">
-737:    <div class="players-strip" id="pstrip"></div>
-738:    <button class="btn" id="leaveBtn" style="font-size:12px;padding:8px 12px;">🔁 خروج از بازی</button>
-740:  top.querySelector('#leaveBtn').onclick = ()=>{ if(confirm('از این بازی خارج بشی؟ (می‌تونی هر وقت با همین کد دوباره واردش بشی)')) leaveSession(); };
-741:  const strip = top.querySelector('#pstrip');
-}
 </script>
 </body>
 </html>
