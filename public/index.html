@@ -972,18 +972,34 @@ function renderModals(wrap){
     m.querySelector('#gX').onclick=()=>{ ui.actionMode=null; ui.giftFromCity=null; render(); };
     wrap.appendChild(m);
   }
-}
-
 function renderWinner(){
   const w = state.winnerId ? playerById(state.winnerId) : null;
-  return el(`<div class="card winner-screen">
+
+  const page = el(`<div class="card winner-screen">
     <div class="crown">👑</div>
-    <h1 class="main-title">${w? w.name+' برنده شد!' : 'بازی بدون برنده پایان یافت'}</h1>
-    ${w?`<div class="small">پایتخت: ${w.capital}</div>`:''}
+
+    <h1 class="main-title">
+      ${w ? w.name + ' برنده شد!' : 'بازی بدون برنده پایان یافت'}
+    </h1>
+
+    ${w ? `<div class="small">پایتخت: ${w.capital}</div>` : ''}
+
+    <div class="btn-row" style="justify-content:center;margin:20px 0;">
+      <button class="btn btn-gold" id="newGameBtn">
+        🎮 بازی جدید
+      </button>
+    </div>
+
     <div class="log-box" style="margin:20px auto;max-width:420px;text-align:right">
       ${[...state.log].slice(-30).reverse().map(l=>`<div class="log-line">${l.text}</div>`).join('')}
     </div>
   </div>`);
+
+  page.querySelector("#newGameBtn").onclick = () => {
+    leaveSession();
+  };
+
+  return page;
 }
 
 /* ===================== POLLING ===================== */
