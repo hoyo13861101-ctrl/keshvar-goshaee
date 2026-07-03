@@ -1026,6 +1026,11 @@ async function tryAutoResume(){
   const s = await loadRoom(lastCode);
   if(!s) return false;
   if(!s.players.some(p=>p.id===savedId)) return false;
+  if(s.phase === "ended"){
+  localStorage.removeItem("lastCode");
+  localStorage.removeItem("myid-" + lastCode);
+  return false;
+}
   code = lastCode; myId = savedId; state = s;
   view = (s.phase==='lobby') ? 'lobby' : 'game';
   startPolling();
