@@ -479,6 +479,8 @@ function startGame(){
   state.phase='playing';
   state.currentPlayerIndex=0;
   state.turnCount=1;
+  state.roundNumber=1;
+  state.roundAnchorId=state.players[0].id;
   state.usedAttackThisTurn=false;
   state.usedBuildThisTurn=false;
   state.pendingBattle=null;
@@ -536,8 +538,8 @@ function checkElimination(){
 function advanceConstructions(){
   state.cities.forEach(c=>{
     if(c.construction){
-      c.construction.remaining -= 1;
-      if(c.construction.remaining<=0){
+      const roundsElapsed = (state.roundNumber||1) - c.construction.startRound;
+      if(roundsElapsed>=2){
         c.hasCastle=true;
         state.log.push({turn:state.turnCount,text:'🏰 ساخت قلعه در '+cityDisplayName(c)+' به پایان رسید.'});
         c.construction=null;
@@ -557,7 +559,6 @@ async function pushState(){
 }
 
 function nextTurn(){
-  advanceConstructions();
   checkElimination();
   if(state.phase!=='playing') return;
   let idx = state.currentPlayerIndex;
@@ -571,6 +572,18 @@ function nextTurn(){
   state.usedBuildThisTurn=false;
   state.turnStartedAt = Date.now();
   const cp = currentPlayer();
+
+  // اگر بازیکنِ لنگرِ دور دیگر زنده نیست (حذف شده)، از همین‌جا لنگرِ دور جدید را بازیکن فعلی قرار می‌دهیم
+  if(!state.roundAnchorId || !playerById(state.roundAnchorId) || !playerById(state.roundAnchorId).alive){
+    state.roundAnchorId = cp.id;
+  }
+  // یک «دور» کامل یعنی نوبت دوباره به همان بازیکنی رسیده که دور را با او شروع کرده بودیم
+  if(cp.id===state.roundAnchorId){
+    state.roundNumber = (state.roundNumber||1) + 1;
+  }
+
+  advanceConstructions();
+
   if(cp.colonyOf){
     cp.colonyTurnsLeft = (cp.colonyTurnsLeft||0) - 1;
     if(cp.colonyTurnsLeft<=0){
@@ -605,9 +618,19 @@ async function doNeutralAttack(srcId,tgtId){
   await pushState();
 }
 async function submitBattleChoice(role, choice){
+  // برای جلوگیری از رِیس‌کاندیشن بین دو بازیکن (که باعث می‌شد انتخاب یک نفر توسط نسخه‌ی قدیمیِ محلیِ بازیکن دیگر پاک شود)
+  // همیشه قبل از ثبتِ انتخاب، آخرین نسخه‌ی state را از سرور می‌گیریم.
+  const fresh = await loadRoom(code);
+  if(fresh) state = fresh;
   const pb = state.pendingBattle;
   if(!pb) return;
-  if(role==='attacker') pb.attackerChoice = choice; else pb.defenderChoice = choice;
+  if(role==='attacker'){
+    if(pb.attackerChoice) return; // قبلاً ثبت شده، دوباره ثبت نکن
+    pb.attackerChoice = choice;
+  } else {
+    if(pb.defenderChoice) return;
+    pb.defenderChoice = choice;
+  }
   if(pb.attackerChoice && pb.defenderChoice){
     resolveBattleStage();
   }
@@ -657,6 +680,8 @@ function resolveBattleStage(){
   checkElimination();
 }
 async function submitColonyChoice(choice){
+  const fresh = await loadRoom(code);
+  if(fresh) state = fresh;
   const pc = state.pendingColonyChoice;
   if(!pc) return;
   const defP = playerById(pc.defenderId), atkP = playerById(pc.attackerId);
@@ -672,6 +697,8 @@ async function submitColonyChoice(choice){
   await pushState();
 }
 async function submitOverlordDecision(accept){
+  const fresh = await loadRoom(code);
+  if(fresh) state = fresh;
   const pc = state.pendingColonyChoice;
   if(!pc) return;
   const defP = playerById(pc.defenderId), atkP = playerById(pc.attackerId);
@@ -689,9 +716,9 @@ async function submitOverlordDecision(accept){
 }
 async function startBuild(cityId){
   const c = cityById(cityId);
-  c.construction = {remaining: 2}; // نوبت درخواست + ۲ نوبتِ کامل دیگر تا اتمام
+  c.construction = {startRound: state.roundNumber||1};
   state.usedBuildThisTurn=true;
-  state.log.push({turn:state.turnCount, text:'🏗️ '+currentPlayer().name+' ساخت قلعه در '+cityDisplayName(c)+' را آغاز کرد.'});
+  state.log.push({turn:state.turnCount, text:'🏗️ '+currentPlayer().name+' ساخت قلعه در '+cityDisplayName(c)+' را آغاز کرد. (تکمیل پس از ۲ دورِ کامل)'});
   ui.actionMode=null; ui.selectedCity=null;
   await pushState();
 }
@@ -883,7 +910,7 @@ function renderGame(){
   const remaining = Math.max(0, TURN_SECONDS - Math.floor((Date.now()-(state.turnStartedAt||Date.now()))/1000));
   const top = el(`<div class="top-bar">
     <div class="turn-banner"><div class="dot" style="background:${cur.color}"></div>
-      <div><b>${isMyTurn()?'نوبت توست!':'نوبت: '+cur.name}</b><div class="small">نوبت شماره ${state.turnCount} — کد اتاق: ${code}</div></div>
+      <div><b>${isMyTurn()?'نوبت توست!':'نوبت: '+cur.name}</b><div class="small">نوبت شماره ${state.turnCount} — دور ${state.roundNumber||1} — کد اتاق: ${code}</div></div>
       <div class="timer-badge ${remaining<=10?'warn':''}" id="timerBadge">⏱️ <span id="turnTimerNum">${remaining}</span> ثانیه</div>
     </div>
     <div class="players-strip" id="pstrip"></div>
@@ -903,7 +930,7 @@ function renderGame(){
   wrap.appendChild(layout);
 
   wrap.appendChild(el(`<div class="footnote">
-    🪶 قوانین این نسخه: هر کشور ۵ شهر دارد — پایتخت وسط و ۴ شهر دیگر در چهار طرفش. ساخت قلعه از لحظه‌ی درخواست، دو نوبتِ کامل دیگر زمان می‌برد (نه بلافاصله)؛ اگر شهر در حین ساخت دست عوض کند، مالک جدید تحویلش می‌گیرد. دفاع در هر لحظه — حتی خارج از نوبت — باید فوری انجام شود. تساوی در سنگ‌کاغذقیچی یعنی تکرار همان مرحله. اگر مهاجم قلعه‌ای را در ضربه‌ی اول تخریب کند، بلافاصله یک رقابت دوم برای تصرف نهایی شهر برگزار می‌شود. اگر پایتخت کسی سقوط کند، باید انتخاب کند مستعمره شود یا منحل؛ اگر مستعمره را انتخاب کند، فاتح باید قبول یا رد کند — با قبول، ۵ نوبتِ خودش نمی‌تواند به فاتح حمله کند و بعدش خودکار آزاد می‌شود؛ با رد یا انتخاب منحل، از بازی حذف می‌شود، مگر اینکه بازیکن دیگری با هدیه‌ی یک شهر او را برگرداند. هر نوبت فقط ${TURN_SECONDS} ثانیه فرصت داری؛ در غیر این صورت نوبت خودکار به نفر بعد می‌رسد.
+    🪶 قوانین این نسخه: هر کشور ۵ شهر دارد — پایتخت وسط و ۴ شهر دیگر در چهار طرفش. ساخت قلعه از لحظه‌ی درخواست، دو دورِ کامل دیگر زمان می‌برد (یک دور یعنی نوبت یک‌بار کاملِ همه‌ی بازیکنان تا برگشتن به همان بازیکن)؛ اگر شهر در حین ساخت دست عوض کند، مالک جدید تحویلش می‌گیرد. دفاع در هر لحظه — حتی خارج از نوبت — باید فوری انجام شود. تساوی در سنگ‌کاغذقیچی یعنی تکرار همان مرحله، به هر تعداد لازم، تا زمانی که یک برنده مشخص شود. اگر مهاجم قلعه‌ای را در ضربه‌ی اول تخریب کند، بلافاصله یک رقابت دوم برای تصرف نهایی شهر برگزار می‌شود. اگر پایتخت کسی سقوط کند، باید انتخاب کند مستعمره شود یا منحل؛ اگر مستعمره را انتخاب کند، فاتح باید قبول یا رد کند — با قبول، ۵ نوبتِ خودش نمی‌تواند به فاتح حمله کند و بعدش خودکار آزاد می‌شود؛ با رد یا انتخاب منحل، از بازی حذف می‌شود، مگر اینکه بازیکن دیگری با هدیه‌ی یک شهر او را برگرداند. هر نوبت فقط ${TURN_SECONDS} ثانیه فرصت داری؛ در غیر این صورت نوبت خودکار به نفر بعد می‌رسد.
   </div>`));
 
   renderModals(wrap);
@@ -923,12 +950,13 @@ function renderMap(){
     const fill = owner? owner.color : '#b9b2a0';
     const selectable = isSelectableCity(c);
     const selected = ui.selectedCity===c.id;
+    const roundsLeft = c.construction ? Math.max(0, 2 - ((state.roundNumber||1) - c.construction.startRound)) : 0;
     svg += `<g data-city="${c.id}" style="cursor:pointer">
       <rect class="city-rect ${selectable?'selectable':''} ${selected?'selected':''}" x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="16" fill="${fill}"/>
       <text class="city-label" x="${x+cellW/2}" y="${y+18}" text-anchor="middle">${c.isCapital?'★ پایتخت':''}</text>
       <text class="city-label" x="${x+cellW/2}" y="${y+cellH-10}" text-anchor="middle" style="font-size:9px">${owner?owner.name:'بی‌صاحب'}</text>
       <text x="${x+14}" y="${y+cellH/2+6}" class="city-icon">${c.hasCastle?'🏰':''}</text>
-      ${c.construction?`<text x="${x+cellW/2}" y="${y+cellH/2+6}" class="city-icon" text-anchor="middle">⏳${c.construction.remaining}</text>`:''}
+      ${c.construction?`<text x="${x+cellW/2}" y="${y+cellH/2+6}" class="city-icon" text-anchor="middle">⏳${roundsLeft}</text>`:''}
     </g>`;
   });
   svg += `</svg>`;
