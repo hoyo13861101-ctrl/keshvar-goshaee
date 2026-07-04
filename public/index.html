@@ -102,6 +102,174 @@ input[type=text],select{width:100%;padding:12px 14px;border-radius:14px;border:n
 </head>
 <body><div id="app"></div>
 <script>
+/* ===== SOUND ENGINE (Web Audio API — بدون نیاز به فایل خارجی) ===== */
+const SFX = (() => {
+  let ctx = null;
+  function getCtx(){
+    if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state==='suspended') ctx.resume();
+    return ctx;
+  }
+  // ساخت نویز
+  function noise(ac, dur){
+    const buf = ac.createBuffer(1, ac.sampleRate*dur, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    const src = ac.createBufferSource(); src.buffer=buf; return src;
+  }
+  // ساخت اسیلاتور
+  function osc(ac, type, freq, detune=0){
+    const o=ac.createOscillator(); o.type=type; o.frequency.value=freq;
+    if(detune) o.detune.value=detune; return o;
+  }
+
+  return {
+    // ⚔️ حمله — طبل جنگی: ضربه کوتاه باس + خش‌خش
+    attack(){
+      try{
+        const ac=getCtx(), t=ac.currentTime;
+        // ضربه باس
+        const osc1=osc(ac,'sine',80); const g1=ac.createGain();
+        osc1.frequency.setValueAtTime(120,t); osc1.frequency.exponentialRampToValueAtTime(40,t+0.18);
+        g1.gain.setValueAtTime(1,t); g1.gain.exponentialRampToValueAtTime(0.001,t+0.25);
+        osc1.connect(g1); g1.connect(ac.destination);
+        osc1.start(t); osc1.stop(t+0.25);
+        // نویز طبل
+        const n=noise(ac,0.15); const gn=ac.createGain(); const flt=ac.createBiquadFilter();
+        flt.type='bandpass'; flt.frequency.value=200; flt.Q.value=0.8;
+        gn.gain.setValueAtTime(0.6,t); gn.gain.exponentialRampToValueAtTime(0.001,t+0.15);
+        n.connect(flt); flt.connect(gn); gn.connect(ac.destination);
+        n.start(t); n.stop(t+0.15);
+        // ضربه دوم بعد از 0.2 ثانیه
+        const osc2=osc(ac,'sine',80); const g2=ac.createGain();
+        osc2.frequency.setValueAtTime(100,t+0.22); osc2.frequency.exponentialRampToValueAtTime(35,t+0.38);
+        g2.gain.setValueAtTime(0.7,t+0.22); g2.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+        osc2.connect(g2); g2.connect(ac.destination);
+        osc2.start(t+0.22); osc2.stop(t+0.4);
+      }catch(e){}
+    },
+
+    // 🏰 ساخت قلعه — صدای ساخت‌وساز: چکش‌های پیاپی
+    build(){
+      try{
+        const ac=getCtx(), t=ac.currentTime;
+        [0, 0.18, 0.36, 0.54].forEach((delay, i)=>{
+          const o=osc(ac,'square', 300+i*30); const g=ac.createGain();
+          const flt=ac.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=800;
+          g.gain.setValueAtTime(0,t+delay); g.gain.linearRampToValueAtTime(0.4,t+delay+0.02);
+          g.gain.exponentialRampToValueAtTime(0.001,t+delay+0.12);
+          o.connect(flt); flt.connect(g); g.connect(ac.destination);
+          o.start(t+delay); o.stop(t+delay+0.12);
+        });
+      }catch(e){}
+    },
+
+    // 🏛️ انتقال پایتخت — شیپور: آرپژ صعودی
+    capitalMove(){
+      try{
+        const ac=getCtx(), t=ac.currentTime;
+        const notes=[392,494,587,784]; // G4 B4 D5 G5
+        notes.forEach((freq,i)=>{
+          const o=osc(ac,'sawtooth',freq); const g=ac.createGain();
+          const flt=ac.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=2000;
+          g.gain.setValueAtTime(0,t+i*0.12); g.gain.linearRampToValueAtTime(0.35,t+i*0.12+0.04);
+          g.gain.exponentialRampToValueAtTime(0.001,t+i*0.12+0.18);
+          o.connect(flt); flt.connect(g); g.connect(ac.destination);
+          o.start(t+i*0.12); o.stop(t+i*0.12+0.2);
+        });
+      }catch(e){}
+    },
+
+    // ⏭️ پایان نوبت — زنگ: ding کوتاه
+    endTurn(){
+      try{
+        const ac=getCtx(), t=ac.currentTime;
+        const o=osc(ac,'sine',880); const g=ac.createGain();
+        g.gain.setValueAtTime(0.5,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.6);
+        o.connect(g); g.connect(ac.destination);
+        o.start(t); o.stop(t+0.65);
+        // هارمونیک
+        const o2=osc(ac,'sine',1320); const g2=ac.createGain();
+        g2.gain.setValueAtTime(0.2,t); g2.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+        o2.connect(g2); g2.connect(ac.destination);
+        o2.start(t); o2.stop(t+0.45);
+      }catch(e){}
+    },
+
+    // 👑 پیروزی — فانفار پیروزی
+    victory(){
+      try{
+        const ac=getCtx(), t=ac.currentTime;
+        const seq=[[523,.12],[659,.12],[784,.12],[1047,.4]]; // C E G C
+        let dt=0;
+        seq.forEach(([f,dur])=>{
+          const o=osc(ac,'sawtooth',f); const g=ac.createGain();
+          const flt=ac.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=3000;
+          g.gain.setValueAtTime(0.4,t+dt); g.gain.exponentialRampToValueAtTime(0.001,t+dt+dur);
+          o.connect(flt); flt.connect(g); g.connect(ac.destination);
+          o.start(t+dt); o.stop(t+dt+dur+0.05);
+          dt+=dur*0.85;
+        });
+      }catch(e){}
+    },
+
+    // 💀 شکست/منحل‌شدن — صدای نزولی تاریک
+    defeat(){
+      try{
+        const ac=getCtx(), t=ac.currentTime;
+        const o=osc(ac,'sawtooth',220); const g=ac.createGain();
+        o.frequency.setValueAtTime(220,t); o.frequency.exponentialRampToValueAtTime(60,t+0.8);
+        g.gain.setValueAtTime(0.4,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.9);
+        o.connect(g); g.connect(ac.destination);
+        o.start(t); o.stop(t+0.9);
+      }catch(e){}
+    },
+
+    // 🏆 تصرف شهر — صدای کوتاه موفقیت
+    capture(){
+      try{
+        const ac=getCtx(), t=ac.currentTime;
+        [523,659].forEach((f,i)=>{
+          const o=osc(ac,'triangle',f); const g=ac.createGain();
+          g.gain.setValueAtTime(0.35,t+i*0.1); g.gain.exponentialRampToValueAtTime(0.001,t+i*0.1+0.2);
+          o.connect(g); g.connect(ac.destination);
+          o.start(t+i*0.1); o.stop(t+i*0.1+0.22);
+        });
+      }catch(e){}
+    },
+
+    // 🛡️ دفاع موفق — صدای سپر
+    defend(){
+      try{
+        const ac=getCtx(), t=ac.currentTime;
+        const n=noise(ac,0.1); const g=ac.createGain(); const flt=ac.createBiquadFilter();
+        flt.type='highpass'; flt.frequency.value=3000;
+        g.gain.setValueAtTime(0.5,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.15);
+        n.connect(flt); flt.connect(g); g.connect(ac.destination);
+        n.start(t); n.stop(t+0.15);
+        const o=osc(ac,'sine',440); const g2=ac.createGain();
+        g2.gain.setValueAtTime(0.3,t); g2.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+        o.connect(g2); g2.connect(ac.destination);
+        o.start(t); o.stop(t+0.2);
+      }catch(e){}
+    },
+
+    // 🕊️ هدیه / بازگشت — صدای لطیف
+    gift(){
+      try{
+        const ac=getCtx(), t=ac.currentTime;
+        [523,659,784,1047].forEach((f,i)=>{
+          const o=osc(ac,'sine',f); const g=ac.createGain();
+          g.gain.setValueAtTime(0,t+i*0.08); g.gain.linearRampToValueAtTime(0.25,t+i*0.08+0.03);
+          g.gain.exponentialRampToValueAtTime(0.001,t+i*0.08+0.25);
+          o.connect(g); g.connect(ac.destination);
+          o.start(t+i*0.08); o.stop(t+i*0.08+0.28);
+        });
+      }catch(e){}
+    }
+  };
+})();
+
 /* ===== STORAGE ===== */
 async function apiGet(k){try{const r=await fetch('/api/state/'+encodeURIComponent(k));if(!r.ok)return null;return(await r.json()).value;}catch{return null;}}
 async function apiSet(k,v){try{await fetch('/api/state/'+encodeURIComponent(k),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:v})});}catch(e){console.error(e);}}
@@ -492,14 +660,15 @@ function nextTurn(){
 /* ===== ACTIONS ===== */
 async function declareAttack(srcId,tgtId){
   const tgt=cityById(tgtId);
-  // FIX: اگر مالک شهر منحل شده، تصرف بدون نبرد
   const defP=playerById(tgt.ownerId);
   if(defP&&!defP.alive){
     tgt.ownerId=myId;tgt.hasCastle=false;
     state.usedAttackThisTurn=true;
+    SFX.capture();
     state.log.push({turn:state.turnCount,text:'🏳️ '+currentPlayer().name+' سرزمین رهاشده '+cityDisplayName(tgt)+' را تصرف کرد.'});
     ui.actionMode=null;ui.selectedCity=null;checkElimination();await pushState();return;
   }
+  SFX.attack();
   state.pendingBattle={attackerCity:srcId,defenderCity:tgtId,attackerId:myId,defenderId:tgt.ownerId,stage:1,attackerChoice:null,defenderChoice:null};
   state.usedAttackThisTurn=true;
   state.log.push({turn:state.turnCount,text:'⚔️ '+currentPlayer().name+' به '+cityDisplayName(tgt)+' حمله کرد.'});
@@ -531,29 +700,42 @@ function resolveBattleStage(){
     else{state.log.push({turn:state.turnCount,text:'🛡️ قلعه حمله را دفع کرد!'});state.pendingBattle=null;return;}
   }
   if(aw){
-    // FIX: قبل از انتقال مالکیت، علامت پایتخت را از شهر حذف می‌کنیم — پایتخت مهاجم تغییر نمی‌کند
     const wasCapital=tgt.isCapital;
-    const prevOwnerId=tgt.ownerId;
     tgt.ownerId=pb.attackerId;
-    tgt.isCapital=false; // شهر تصرف‌شده دیگر پایتخت نیست
+    tgt.isCapital=false;
+    SFX.capture();
     state.log.push({turn:state.turnCount,text:'🚩 '+atkP.name+' سرزمین '+tgt.mapName+' را تصرف کرد!'});
     if(wasCapital&&defP){
-      // پایتخت از دست رفت — defP باید مستعمره/انحلال انتخاب کند
-      defP.capitalCityId=null; // FIX: پایتخت defP دیگر وجود ندارد
+      defP.capitalCityId=null;
       state.pendingColonyChoice={defenderId:defP.id,attackerId:atkP.id,cityId:tgt.id,defenderDecision:null};
       state.log.push({turn:state.turnCount,text:'👑💔 پایتخت '+defP.name+' سقوط کرد! باید انتخاب کند: مستعمره یا انحلال.'});
     }
-  }else{state.log.push({turn:state.turnCount,text:'🛡️ '+defP.name+' با موفقیت دفاع کرد.'});}
+  }else{SFX.defend();state.log.push({turn:state.turnCount,text:'🛡️ '+defP.name+' با موفقیت دفاع کرد.'});}
   state.pendingBattle=null;checkElimination();
 }
+// وقتی بازیکن منحل می‌شود: همه سرزمین‌هایش به مهاجم منتقل می‌شود
+function annexAllCities(victimId, newOwnerId){
+  const newOwner=playerById(newOwnerId);
+  state.cities.forEach(c=>{
+    if(c.ownerId!==victimId)return;
+    c.ownerId=newOwnerId;
+    c.isCapital=false; // پایتخت قدیمی علامت‌گذاری پاک می‌شود
+    c.hasCastle=false; // قلعه‌ها خراب می‌شوند
+    c.construction=null;
+  });
+  state.log.push({turn:state.turnCount,text:'🗺️ تمام سرزمین‌های '+playerById(victimId)?.name+' به '+(newOwner?newOwner.name:'؟')+' ضمیمه شد.'});
+}
+
 async function submitColonyChoice(choice){
   const fresh=await loadRoom(code);if(fresh)state=fresh;
   const pc=state.pendingColonyChoice;if(!pc)return;
   const defP=playerById(pc.defenderId),atkP=playerById(pc.attackerId);
   if(choice==='dissolve'){
     defP.alive=false;
-    // FIX: شهرهای بازیکن منحل‌شده آزاد نمی‌شوند — مهاجم می‌تواند همه را تصرف کند
-    state.log.push({turn:state.turnCount,text:'💀 '+defP.name+' منحل شد. سرزمین‌هایش بی‌دفاع است — هر کسی می‌تواند تصرفشان کند.'});
+    annexAllCities(defP.id, atkP.id);
+    defP.capitalCityId=null;
+    SFX.defeat();
+    state.log.push({turn:state.turnCount,text:'💀 '+defP.name+' منحل شد.'});
     state.pendingColonyChoice=null;checkElimination();
   }else{pc.defenderDecision='colony';state.log.push({turn:state.turnCount,text:'📨 '+defP.name+' درخواست مستعمره داد...'});}
   await pushState();
@@ -562,12 +744,22 @@ async function submitOverlordDecision(accept){
   const fresh=await loadRoom(code);if(fresh)state=fresh;
   const pc=state.pendingColonyChoice;if(!pc)return;
   const defP=playerById(pc.defenderId),atkP=playerById(pc.attackerId);
-  if(accept){defP.colonyOf=atkP.id;defP.colonyTurnsLeft=5;state.log.push({turn:state.turnCount,text:'🤝 '+atkP.name+' پذیرفت؛ '+defP.name+' مستعمره شد.'});}
-  else{defP.alive=false;state.log.push({turn:state.turnCount,text:'❌ درخواست رد شد؛ '+defP.name+' منحل شد. سرزمین‌هایش بی‌دفاع است.'});checkElimination();}
+  if(accept){
+    defP.colonyOf=atkP.id;defP.colonyTurnsLeft=5;
+    state.log.push({turn:state.turnCount,text:'🤝 '+atkP.name+' پذیرفت؛ '+defP.name+' برای ۵ نوبت مستعمره شد.'});
+  }else{
+    defP.alive=false;
+    annexAllCities(defP.id, atkP.id);
+    defP.capitalCityId=null;
+    SFX.defeat();
+    state.log.push({turn:state.turnCount,text:'❌ درخواست رد شد؛ '+defP.name+' منحل و تمام سرزمین‌هایش ضمیمه شد.'});
+    checkElimination();
+  }
   state.pendingColonyChoice=null;await pushState();
 }
 async function startBuild(cityId){
   const c=cityById(cityId);c.construction={startRound:state.roundNumber||1};state.usedBuildThisTurn=true;
+  SFX.build();
   state.log.push({turn:state.turnCount,text:'🏗️ ساخت قلعه در '+cityDisplayName(c)+' آغاز شد. (۲ دور طول می‌کشد)'});
   ui.actionMode=null;ui.selectedCity=null;await pushState();
 }
@@ -580,14 +772,24 @@ async function startCapitalMove(toCityId){
   if(me.pendingCapitalMove){state.log.push({turn:state.turnCount,text:'⚠️ یک انتقال پایتخت در جریان است.'});return;}
   me.pendingCapitalMove={fromCityId:me.capitalCityId,toCityId,startRound:state.roundNumber||1};
   state.usedCapMoveThisTurn=true;
+  SFX.capitalMove();
   state.log.push({turn:state.turnCount,text:'🏛️ '+me.name+' درخواست انتقال پایتخت به '+toCity.mapName+' داد. (۱ دور طول می‌کشد)'});
   ui.actionMode=null;ui.selectedCity=null;await pushState();
 }
 async function doGift(cityId,targetPlayerId){
   const c=cityById(cityId),from=playerById(c.ownerId),to=playerById(targetPlayerId);
   c.ownerId=targetPlayerId;
-  if(!to.alive){to.alive=true;to.colonyOf=null;to.colonyTurnsLeft=0;state.log.push({turn:state.turnCount,text:'🕊️ '+from.name+' با هدیه شهر '+c.mapName+' به '+to.name+'، او را بازگرداند!'});}
-  else{state.log.push({turn:state.turnCount,text:'🎁 '+from.name+' سرزمین '+c.mapName+' را به '+to.name+' هدیه داد.'});}
+  if(!to.alive){
+    // بازیکن برمی‌گردد — شهر هدیه‌شده خودکار پایتخت جدید می‌شود
+    to.alive=true;to.colonyOf=null;to.colonyTurnsLeft=0;to.pendingCapitalMove=null;
+    if(to.capitalCityId){const oldCap=cityById(to.capitalCityId);if(oldCap&&oldCap.ownerId===to.id)oldCap.isCapital=false;}
+    c.isCapital=true;
+    to.capitalCityId=c.id;
+    SFX.gift();
+    state.log.push({turn:state.turnCount,text:'🕊️ '+from.name+' شهر '+c.mapName+' را به '+to.name+' هدیه داد — '+to.name+' به بازی برگشت و این شهر پایتخت جدیدش شد!'});
+  }else{
+    state.log.push({turn:state.turnCount,text:'🎁 '+from.name+' سرزمین '+c.mapName+' را به '+to.name+' هدیه داد.'});
+  }
   ui.actionMode=null;ui.selectedCity=null;ui.giftFromCity=null;checkElimination();await pushState();
 }
 async function doSurrender(){
@@ -596,7 +798,7 @@ async function doSurrender(){
   state.log.push({turn:state.turnCount,text:'🏳️ '+me.name+' تسلیم شد. سرزمین‌هایش بی‌دفاع است.'});
   if(isMyTurn())nextTurn();else checkElimination();await pushState();
 }
-async function endTurn(){nextTurn();await pushState();}
+async function endTurn(){SFX.endTurn();nextTurn();await pushState();}
 async function sendChat(){
   if(!ui.chatText.trim())return;
   const me=playerById(myId);
@@ -1016,6 +1218,8 @@ function startNewGameFlow(){
   code=null;myId=null;state=null;ui.setupName='';ui.setupColor=null;ui.joinCode='';view='landing';render();
 }
 function renderWinner(){
+  if(state.winnerId===myId) SFX.victory();
+  else if(state.winnerId) SFX.defeat();
   const w=state.winnerId?playerById(state.winnerId):null;
   const node=el(`<div class="card winner-screen"><div class="crown">👑</div>
     <h1 class="main-title">${w?w.name+' برنده شد!':'بازی بدون برنده پایان یافت'}</h1>
@@ -1047,5 +1251,5 @@ function leaveSession(){
   render();
 })();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a15f6b00aab4e58f',t:'MTc4MzE4MTYxNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
