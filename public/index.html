@@ -75,8 +75,8 @@ input[type=text],select{width:100%;padding:12px 14px;border-radius:14px;border:n
 .legend-item{display:flex;align-items:center;gap:5px;}
 .legend-dot{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.2);}
 /* capital pick phase */
-.cap-pick-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);border-radius:16px;display:flex;align-items:center;justify-content:center;z-index:10;}
-.cap-pick-msg{background:var(--bg);border-radius:18px;padding:16px 22px;text-align:center;font-weight:700;box-shadow:8px 8px 16px var(--shadow-dark),-8px -8px 16px var(--shadow-light);}
+.cap-pick-overlay{position:absolute;inset:0;background:transparent;border-radius:16px;display:flex;align-items:flex-start;justify-content:center;z-index:10;pointer-events:none;}
+.cap-pick-msg{background:var(--bg);border-radius:0 0 18px 18px;padding:12px 20px;text-align:center;font-weight:700;box-shadow:4px 8px 16px var(--shadow-dark);pointer-events:none;opacity:.93;}
 .cap-timer-bar{height:6px;border-radius:3px;background:var(--accent-bg);margin-top:10px;overflow:hidden;box-shadow:inset 2px 2px 4px var(--shadow-dark),inset -2px -2px 4px var(--shadow-light);}
 .cap-timer-fill{height:100%;background:var(--accent);transition:width .9s linear;}
 /* action panel */
@@ -614,7 +614,8 @@ async function runBotTurn(bot){
   if(state.phase==='playing'&&!state.pendingBattle&&!state.pendingColonyChoice){
     const bp=bot.botLevel==='easy'?.2:bot.botLevel==='medium'?.5:.8;
     if(!state.usedBuildThisTurn&&Math.random()<bp){
-      const bl=state.cities.filter(c=>c.ownerId===bot.id&&!c.hasCastle&&!c.construction);
+      const botAlreadyBuilding=state.cities.some(c=>c.ownerId===bot.id&&c.construction);
+      const bl=botAlreadyBuilding?[]:state.cities.filter(c=>c.ownerId===bot.id&&!c.hasCastle&&!c.construction);
       if(bl.length>0)await startBuild(bl[Math.floor(Math.random()*bl.length)].id);
     }
   }
@@ -710,7 +711,10 @@ function isSelectableCity(c){
   if(!isMyTurn()||state.pendingBattle)return false;
   if(ui.actionMode==='attack-src')return c.ownerId===myId&&attackTargets(c).length>0&&!state.usedAttackThisTurn;
   if(ui.actionMode==='attack-tgt')return ui.selectedCity&&attackTargets(cityById(ui.selectedCity)).some(t=>t.id===c.id);
-  if(ui.actionMode==='build-src')return c.ownerId===myId&&!c.construction&&!c.hasCastle&&!state.usedBuildThisTurn;
+  if(ui.actionMode==='build-src'){
+    const alreadyBuilding=state.cities.some(x=>x.ownerId===myId&&x.construction);
+    return c.ownerId===myId&&!c.construction&&!c.hasCastle&&!state.usedBuildThisTurn&&!alreadyBuilding;
+  }
   if(ui.actionMode==='gift-src')return c.ownerId===myId;
   return false;
 }
@@ -866,7 +870,10 @@ function renderSidePanel(){
       const actions=el(`<div class="card"><h3 class="display" style="font-size:16px;margin:0 0 10px;color:var(--accent)">اقدامات نوبت</h3><div class="action-btns"></div></div>`);
       const grid=actions.querySelector('.action-btns');
       const atkBtn=el(`<button class="btn">⚔️ حمله</button>`);atkBtn.disabled=state.usedAttackThisTurn;atkBtn.onclick=()=>{ui.actionMode=ui.actionMode==='attack-src'?null:'attack-src';render();};
-      const bldBtn=el(`<button class="btn">🏰 قلعه</button>`);bldBtn.disabled=state.usedBuildThisTurn;bldBtn.onclick=()=>{ui.actionMode=ui.actionMode==='build-src'?null:'build-src';render();};
+      const alreadyBuilding=state.cities.some(x=>x.ownerId===myId&&x.construction);
+      const bldBtn=el(`<button class="btn" title="${alreadyBuilding?'تا پایان ساخت فعلی نمی‌توانی ساخت جدید شروع کنی':''}">🏰 قلعه${alreadyBuilding?' ⏳':''}</button>`);
+      bldBtn.disabled=state.usedBuildThisTurn||alreadyBuilding;
+      bldBtn.onclick=()=>{ui.actionMode=ui.actionMode==='build-src'?null:'build-src';render();};
       const gftBtn=el(`<button class="btn">🎁 هدیه</button>`);gftBtn.onclick=()=>{ui.actionMode=ui.actionMode==='gift-src'?null:'gift-src';render();};
       const surBtn=el(`<button class="btn btn-danger">🏳️ تسلیم</button>`);surBtn.onclick=doSurrender;
       grid.appendChild(atkBtn);grid.appendChild(bldBtn);grid.appendChild(gftBtn);grid.appendChild(surBtn);
@@ -904,7 +911,7 @@ function escHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':
 function modeHint(){
   if(ui.actionMode==='attack-src')return'روی یکی از سرزمین‌هایت (هایلایت طلایی) کلیک کن.';
   if(ui.actionMode==='attack-tgt')return'حالا روی سرزمین دشمن مجاور کلیک کن.';
-  if(ui.actionMode==='build-src')return'سرزمینی بدون قلعه برای ساخت انتخاب کن.';
+  if(ui.actionMode==='build-src')return'سرزمینی بدون قلعه و بدون ساخت‌وساز فعال انتخاب کن.';
   if(ui.actionMode==='gift-src')return'سرزمینی که می‌خواهی هدیه دهی را انتخاب کن.';
   if(ui.actionMode==='gift-choose')return'گیرنده هدیه را انتخاب کن.';
   return'';
@@ -999,5 +1006,5 @@ function leaveSession(){
   render();
 })();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a15dc570c9fe958a',t:'MTc4MzE2NDM0Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
