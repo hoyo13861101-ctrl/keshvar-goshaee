@@ -199,7 +199,7 @@ const RPS = [
   {k:'paper', icon:'📄', label:'کاغذ'},
   {k:'scissors', icon:'✂️', label:'قیچی'}
 ];
-const TURN_SECONDS = 30;
+const TURN_SECONDS = 60;
 function rpsWinner(a,b){
   if(a===b) return 'tie';
   if((a==='rock'&&b==='scissors')||(a==='scissors'&&b==='paper')||(a==='paper'&&b==='rock')) return 'a';
@@ -402,6 +402,15 @@ function renderLobby(){
     </div>
     <div class="lobby-players" id="plist"></div>
     <div class="small" style="text-align:center;">${state.players.length} از ${state.maxPlayers} بازیکن</div>
+    ${isHost && state.players.length<state.maxPlayers ? `
+    <div class="btn-row" style="justify-content:center">
+      <select id="botLevel">
+        <option value="easy">ربات آسان</option>
+        <option value="medium">ربات متوسط</option>
+        <option value="hard">ربات سخت</option>
+      </select>
+      <button class="btn" id="addBotBtn">➕ افزودن ربات</button>
+    </div>` : ''}
     <div class="btn-row" style="justify-content:center">
       <button class="btn btn-gold" id="startBtn" ${(!isHost || state.players.length<2)?'disabled':''}>شروع بازی</button>
     </div>
@@ -413,8 +422,24 @@ function renderLobby(){
   };
   const pl = c.querySelector('#plist');
   state.players.forEach(p=>{
-    pl.appendChild(el(`<div class="lobby-player"><div class="dot" style="background:${p.color}"></div><div><b>${p.name}</b> — پایتخت: ${p.capital} ${p.id===state.hostId?'👑':''} ${p.id===myId?'(تو)':''}</div></div>`));
+    pl.appendChild(el(`<div class="lobby-player"><div class="dot" style="background:${p.color}"></div><div><b>${p.name}</b>${p.isBot?' 🤖':''} — پایتخت: ${p.capital} ${p.id===state.hostId?'👑':''} ${p.id===myId?'(تو)':''}</div></div>`));
   });
+  const addBotBtn = c.querySelector('#addBotBtn');
+  if(addBotBtn){
+    addBotBtn.onclick = async ()=>{
+      const level = c.querySelector('#botLevel').value;
+      const usedColors = state.players.map(p=>p.color);
+      const colorObj = COLORS.find(cc=>!usedColors.includes(cc.hex));
+      if(!colorObj){ alert('رنگ آزادی برای ربات نمانده.'); return; }
+      const levelLabel = level==='easy'?'آسان':level==='medium'?'متوسط':'سخت';
+      const bot = { id:'bot-'+uid(), name:'ربات '+levelLabel, capital:'دژ خودکار '+levelLabel, color:colorObj.hex,
+        alive:true, colonyOf:null, colonyTurnsLeft:0, isBot:true, botLevel:level };
+      state.players.push(bot);
+      state.version=(state.version||0)+1;
+      await saveRoom(state);
+      render();
+    };
+  }
   if(isHost){
     c.querySelector('#startBtn').onclick = async ()=>{
       startGame();
@@ -428,19 +453,23 @@ function renderLobby(){
 /* ===================== MAP GENERATION ===================== */
 function buildMap(players){
   const n = players.length;
-  const width = n*2, height=2;
-  const cities=[];
-  for(let row=0; row<height; row++){
-    for(let col=0; col<width; col++){
-      const pIndex = Math.floor(col/2);
-      const owner = players[pIndex].id;
-      const isCapital = (row===0 && col===pIndex*2);
-      cities.push({
-        id:'r'+row+'c'+col, row, col, ownerId: owner, isCapital,
-        hasCastle:false, construction:null
-      });
-    }
-  }
+  const width = n*3, height = 3;
+  const cities = [];
+  players.forEach((pl,idx)=>{
+    const base = idx*3;
+    // پایتخت وسط بلوکِ ۳ در ۳ کشور، و ۴ شهر دیگر در شمال/جنوب/شرق/غرب که احاطه‌اش می‌کنند
+    const specs = [
+      {dc:1, dr:1, isCapital:true},
+      {dc:1, dr:0, isCapital:false},
+      {dc:1, dr:2, isCapital:false},
+      {dc:0, dr:1, isCapital:false},
+      {dc:2, dr:1, isCapital:false}
+    ];
+    specs.forEach(s=>{
+      const col = base+s.dc, row = s.dr;
+      cities.push({id:'r'+row+'c'+col, row, col, ownerId: pl.id, isCapital: s.isCapital, hasCastle:false, construction:null});
+    });
+  });
   return {cities, width, height};
 }
 function startGame(){
@@ -584,11 +613,18 @@ async function submitBattleChoice(role, choice){
   }
   await pushState();
 }
+function recordRpsChoice(pid, choice){
+  if(!state.rpsHistory) state.rpsHistory={};
+  if(!state.rpsHistory[pid]) state.rpsHistory[pid]={rock:0,paper:0,scissors:0};
+  state.rpsHistory[pid][choice]++;
+}
 function resolveBattleStage(){
   const pb = state.pendingBattle;
   const tgt = cityById(pb.defenderCity);
   const w = rpsWinner(pb.attackerChoice, pb.defenderChoice);
   const atkP = playerById(pb.attackerId), defP = playerById(pb.defenderId);
+  recordRpsChoice(pb.attackerId, pb.attackerChoice);
+  recordRpsChoice(pb.defenderId, pb.defenderChoice);
   if(w==='tie'){
     state.log.push({turn:state.turnCount, text:'🤝 نبرد مساوی شد! دوباره سنگ‌کاغذقیچی...'});
     pb.attackerChoice=null; pb.defenderChoice=null;
@@ -722,6 +758,122 @@ async function handleTurnTimeout(){
 }
 setInterval(tickTimer, 1000);
 
+/* ===================== BOT AI ===================== */
+let botActing = false;
+function botDelay(){ return new Promise(r=>setTimeout(r, 900+Math.random()*900)); }
+function counterOf(choice){ return choice==='rock'?'paper': choice==='paper'?'scissors':'rock'; }
+function botChoiceRPS(bot, opponentId){
+  const opts=['rock','paper','scissors'];
+  const rnd = ()=>opts[Math.floor(Math.random()*3)];
+  if(bot.botLevel==='easy') return rnd();
+  const hist = state.rpsHistory && state.rpsHistory[opponentId];
+  const total = hist ? hist.rock+hist.paper+hist.scissors : 0;
+  if(bot.botLevel==='medium'){
+    if(total>=2 && Math.random()<0.5){
+      const top = Object.entries(hist).sort((a,b)=>b[1]-a[1])[0];
+      return counterOf(top[0]);
+    }
+    return rnd();
+  }
+  // hard: همیشه پرتکرارترین انتخاب حریف را کانتر می‌زند (اگر سابقه‌ای باشد)
+  if(total>0){
+    const top = Object.entries(hist).sort((a,b)=>b[1]-a[1])[0];
+    return counterOf(top[0]);
+  }
+  return rnd();
+}
+async function runBotTurn(bot){
+  const myCities = state.cities.filter(c=>c.ownerId===bot.id);
+  const attackProb = bot.botLevel==='easy'?0.4: bot.botLevel==='medium'?0.65:0.9;
+  if(!state.usedAttackThisTurn && Math.random()<attackProb){
+    let pairs=[];
+    myCities.forEach(src=>{ attackTargets(src).forEach(tgt=>pairs.push([src,tgt])); });
+    if(pairs.length>0){
+      let chosen;
+      if(bot.botLevel==='easy'){
+        chosen = pairs[Math.floor(Math.random()*pairs.length)];
+      } else {
+        pairs.sort((a,b)=>{
+          const score = (t)=> (t.isCapital?-100:0) + (t.hasCastle?5:0) + cityCount(t.ownerId);
+          return score(a[1]) - score(b[1]);
+        });
+        chosen = pairs[0];
+      }
+      await declareAttack(chosen[0].id, chosen[1].id);
+      if(state.pendingBattle && state.pendingBattle.attackerId===bot.id && !state.pendingBattle.attackerChoice){
+        await submitBattleChoice('attacker', botChoiceRPS(bot, state.pendingBattle.defenderId));
+      }
+    }
+  }
+  if(state.phase==='playing' && !state.pendingBattle && !state.pendingColonyChoice){
+    const buildProb = bot.botLevel==='easy'?0.2: bot.botLevel==='medium'?0.5:0.8;
+    if(!state.usedBuildThisTurn && Math.random()<buildProb){
+      const buildable = state.cities.filter(c=>c.ownerId===bot.id && !c.hasCastle && !c.construction);
+      if(buildable.length>0){
+        const target = buildable[Math.floor(Math.random()*buildable.length)];
+        await startBuild(target.id);
+      }
+    }
+  }
+  if(state.phase==='playing' && !state.pendingBattle && !state.pendingColonyChoice){
+    await endTurn();
+  }
+}
+async function maybeRunBot(){
+  if(botActing) return;
+  if(view!=='game' || !state || state.phase!=='playing') return;
+  if(state.pendingColonyChoice){
+    const pc = state.pendingColonyChoice;
+    const defP = playerById(pc.defenderId), atkP = playerById(pc.attackerId);
+    if(defP && defP.isBot && !pc.defenderDecision){
+      botActing=true;
+      await botDelay();
+      const fresh = await loadRoom(code); if(fresh) state=fresh;
+      if(state.pendingColonyChoice && !state.pendingColonyChoice.defenderDecision){ await submitColonyChoice('colony'); }
+      botActing=false; return;
+    }
+    if(pc.defenderDecision==='colony' && atkP && atkP.isBot){
+      botActing=true;
+      await botDelay();
+      const fresh = await loadRoom(code); if(fresh) state=fresh;
+      if(state.pendingColonyChoice && state.pendingColonyChoice.defenderDecision==='colony'){
+        await submitOverlordDecision(atkP.botLevel!=='hard');
+      }
+      botActing=false; return;
+    }
+    return;
+  }
+  if(state.pendingBattle){
+    const pb = state.pendingBattle;
+    const atkP = playerById(pb.attackerId), defP = playerById(pb.defenderId);
+    if(atkP && atkP.isBot && !pb.attackerChoice){
+      botActing=true; await botDelay();
+      const fresh = await loadRoom(code); if(fresh) state=fresh;
+      if(state.pendingBattle && !state.pendingBattle.attackerChoice){ await submitBattleChoice('attacker', botChoiceRPS(atkP, pb.defenderId)); }
+      botActing=false; return;
+    }
+    if(defP && defP.isBot && !pb.defenderChoice){
+      botActing=true; await botDelay();
+      const fresh = await loadRoom(code); if(fresh) state=fresh;
+      if(state.pendingBattle && !state.pendingBattle.defenderChoice){ await submitBattleChoice('defender', botChoiceRPS(defP, pb.attackerId)); }
+      botActing=false; return;
+    }
+    return;
+  }
+  const cp = currentPlayer();
+  if(cp && cp.isBot){
+    botActing=true;
+    await botDelay();
+    const fresh = await loadRoom(code); if(fresh) state=fresh;
+    const cp2 = currentPlayer();
+    if(cp2 && cp2.isBot && cp2.id===cp.id && state.phase==='playing' && !state.pendingBattle && !state.pendingColonyChoice){
+      await runBotTurn(cp2);
+    }
+    botActing=false;
+  }
+}
+setInterval(maybeRunBot, 1500);
+
 /* ===================== GAME RENDER ===================== */
 function renderGame(){
   if(state.phase==='ended') return renderWinner();
@@ -751,7 +903,7 @@ function renderGame(){
   wrap.appendChild(layout);
 
   wrap.appendChild(el(`<div class="footnote">
-    🪶 قوانین این نسخه: ساخت قلعه از لحظه‌ی درخواست، دو نوبتِ کامل دیگر زمان می‌برد (نه بلافاصله)؛ اگر شهر در حین ساخت دست عوض کند، مالک جدید تحویلش می‌گیرد. دفاع در هر لحظه — حتی خارج از نوبت — باید فوری انجام شود. تساوی در سنگ‌کاغذقیچی یعنی تکرار همان مرحله. اگر مهاجم قلعه‌ای را در ضربه‌ی اول تخریب کند، بلافاصله یک رقابت دوم برای تصرف نهایی شهر برگزار می‌شود. اگر پایتخت کسی سقوط کند، آن بازیکن به مدت ۵ نوبتِ خودش مستعمره‌ی فاتح می‌شود و نمی‌تواند در این مدت به او حمله کند؛ بعد از ۵ نوبت خودکار آزاد می‌شود. اگر بازیکنی همه‌ی شهرهایش را از دست بدهد منحل (حذف) می‌شود — مگر اینکه بازیکن دیگری با هدیه‌ی یک شهر او را برگرداند. هر نوبت فقط ${TURN_SECONDS} ثانیه فرصت داری؛ در غیر این صورت نوبت خودکار به نفر بعد می‌رسد.
+    🪶 قوانین این نسخه: هر کشور ۵ شهر دارد — پایتخت وسط و ۴ شهر دیگر در چهار طرفش. ساخت قلعه از لحظه‌ی درخواست، دو نوبتِ کامل دیگر زمان می‌برد (نه بلافاصله)؛ اگر شهر در حین ساخت دست عوض کند، مالک جدید تحویلش می‌گیرد. دفاع در هر لحظه — حتی خارج از نوبت — باید فوری انجام شود. تساوی در سنگ‌کاغذقیچی یعنی تکرار همان مرحله. اگر مهاجم قلعه‌ای را در ضربه‌ی اول تخریب کند، بلافاصله یک رقابت دوم برای تصرف نهایی شهر برگزار می‌شود. اگر پایتخت کسی سقوط کند، باید انتخاب کند مستعمره شود یا منحل؛ اگر مستعمره را انتخاب کند، فاتح باید قبول یا رد کند — با قبول، ۵ نوبتِ خودش نمی‌تواند به فاتح حمله کند و بعدش خودکار آزاد می‌شود؛ با رد یا انتخاب منحل، از بازی حذف می‌شود، مگر اینکه بازیکن دیگری با هدیه‌ی یک شهر او را برگرداند. هر نوبت فقط ${TURN_SECONDS} ثانیه فرصت داری؛ در غیر این صورت نوبت خودکار به نفر بعد می‌رسد.
   </div>`));
 
   renderModals(wrap);
@@ -760,7 +912,7 @@ function renderGame(){
 
 function renderMap(){
   const W = state.mapWidth, H = state.mapHeight;
-  const cellW=90, cellH=90, gap=10, pad=16;
+  const cellW=76, cellH=76, gap=8, pad=16;
   const svgW = pad*2 + W*cellW + (W-1)*gap;
   const svgH = pad*2 + H*cellH + (H-1)*gap;
   let svg = `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" style="max-width:100%">`;
@@ -974,16 +1126,32 @@ function renderModals(wrap){
   }
 }
 
+function startNewGameFlow(){
+  try{
+    if(code) localStorage.removeItem('myid-'+code);
+    localStorage.removeItem('lastCode');
+  }catch(e){}
+  if(pollTimer) clearInterval(pollTimer);
+  code=null; myId=null; state=null;
+  ui.setupName=''; ui.setupCapital=''; ui.setupColor=null; ui.joinCode='';
+  view='landing';
+  render();
+}
 function renderWinner(){
   const w = state.winnerId ? playerById(state.winnerId) : null;
-  return el(`<div class="card winner-screen">
+  const node = el(`<div class="card winner-screen">
     <div class="crown">👑</div>
     <h1 class="main-title">${w? w.name+' برنده شد!' : 'بازی بدون برنده پایان یافت'}</h1>
     ${w?`<div class="small">پایتخت: ${w.capital}</div>`:''}
+    <div class="btn-row" style="justify-content:center;margin-top:10px">
+      <button class="btn btn-gold" id="newGameBtn">🎮 بازی جدید</button>
+    </div>
     <div class="log-box" style="margin:20px auto;max-width:420px;text-align:right">
       ${[...state.log].slice(-30).reverse().map(l=>`<div class="log-line">${l.text}</div>`).join('')}
     </div>
   </div>`);
+  node.querySelector('#newGameBtn').onclick = startNewGameFlow;
+  return node;
 }
 
 /* ===================== POLLING ===================== */
@@ -997,7 +1165,7 @@ function startPolling(){
       if(state.phase==='playing'||state.phase==='ended') view='game';
       render();
     }
-  }, 2200);
+  }, 1200);
 }
 
 // اگه این مرورگر قبلاً توی یه بازی بوده (رفرش شده یا تب بسته شده)، خودکار برش‌گردون وسط همون بازی
