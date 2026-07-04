@@ -6,16 +6,16 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap');
 :root{
-  --bg:#e7e2d6; --shadow-dark:#c3bcac; --shadow-light:#ffffff;
-  --ink:#4a4335; --ink-soft:#8a8071; --accent:#b9834a;
-  --accent-bg:#e3cfa2; --accent-shadow-d:#c2ab7c; --accent-shadow-l:#ffffff;
-  --danger:#b5564a; --danger-bg:#e3b8ae; --danger-shadow-d:#c2938a;
-  --ok:#5c8a5a; --radius:22px;
+  --bg:#e7e2d6;--shadow-dark:#c3bcac;--shadow-light:#ffffff;
+  --ink:#4a4335;--ink-soft:#8a8071;--accent:#b9834a;
+  --accent-bg:#e3cfa2;--accent-shadow-d:#c2ab7c;--accent-shadow-l:#ffffff;
+  --danger:#b5564a;--danger-bg:#e3b8ae;--danger-shadow-d:#c2938a;
+  --ok:#5c8a5a;--radius:22px;
 }
 *{box-sizing:border-box;}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Vazirmatn',sans-serif;min-height:100vh;}
 h1,h2,h3,.display{font-family:'Vazirmatn',sans-serif;font-weight:800;letter-spacing:.2px;}
-#app{max-width:1180px;margin:0 auto;padding:18px 14px 60px;}
+#app{max-width:1220px;margin:0 auto;padding:18px 14px 60px;}
 .card{background:var(--bg);border-radius:var(--radius);box-shadow:9px 9px 18px var(--shadow-dark),-9px -9px 18px var(--shadow-light);border:none;padding:22px;}
 .title-row{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px;}
 .crown{font-size:26px;}
@@ -55,33 +55,32 @@ input[type=text],select{width:100%;padding:12px 14px;border-radius:14px;border:n
 .player-chip.dead{opacity:.35;text-decoration:line-through;}
 .player-chip.current{box-shadow:inset 3px 3px 6px var(--shadow-dark),inset -3px -3px 6px var(--shadow-light);color:var(--accent);font-weight:800;}
 .layout{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
-.map-wrap{flex:1;min-width:320px;}
+.map-wrap{flex:1;min-width:340px;}
 .side-panel{width:300px;flex:none;display:flex;flex-direction:column;gap:12px;}
 /* MAP */
-.map-card{border-radius:28px;padding:14px;box-shadow:inset 8px 8px 16px var(--shadow-dark),inset -8px -8px 16px var(--shadow-light);overflow:hidden;position:relative;}
-.map-svg{width:100%;height:auto;display:block;}
-.territory-path{cursor:pointer;transition:filter .15s;stroke:#1a1208;stroke-width:2;stroke-linejoin:round;}
-.territory-path:hover{filter:brightness(1.2);}
+.map-card{border-radius:28px;padding:14px;box-shadow:inset 8px 8px 16px var(--shadow-dark),inset -8px -8px 16px var(--shadow-light);overflow:visible;position:relative;}
+.map-svg{width:100%;height:auto;display:block;overflow:visible;}
+.territory-path{cursor:pointer;transition:filter .15s;stroke:#1a1208;stroke-width:2;stroke-linejoin:round;paint-order:stroke fill;}
+.territory-path:hover{filter:brightness(1.18);}
 .territory-path.selectable{stroke:#f5c842;stroke-width:4;animation:pulseGold 1s infinite alternate;}
 .territory-path.selected{stroke:#fff;stroke-width:5;}
-@keyframes pulseGold{from{filter:drop-shadow(0 0 5px rgba(245,200,66,.5));}to{filter:drop-shadow(0 0 14px rgba(245,200,66,1));}}
-/* FIX: متن‌های نقشه همیشه روی سرزمین‌ها باشند */
-.territory-labels-group{pointer-events:none;}
-.t-name{font-family:'Vazirmatn',sans-serif;font-size:10.5px;font-weight:800;fill:#fff;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:rgba(0,0,0,.6);stroke-width:3px;}
+@keyframes pulseGold{from{filter:drop-shadow(0 0 4px rgba(245,200,66,.4));}to{filter:drop-shadow(0 0 12px rgba(245,200,66,1));}}
+/* FIX: labels همیشه روی همه paths */
+.labels-layer{pointer-events:none;}
+.t-name{font-family:'Vazirmatn',sans-serif;font-size:10px;font-weight:800;fill:#fff;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:rgba(0,0,0,.65);stroke-width:3px;}
 .t-name.is-capital{fill:#ffe87a;font-size:10px;}
-.t-owner{font-family:'Vazirmatn',sans-serif;font-size:9px;font-weight:600;fill:rgba(255,255,255,.9);text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:rgba(0,0,0,.5);stroke-width:2.5px;}
-.t-icon{font-size:13px;text-anchor:middle;dominant-baseline:central;}
+.t-owner{font-family:'Vazirmatn',sans-serif;font-size:8.5px;font-weight:600;fill:rgba(255,255,255,.92);text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:rgba(0,0,0,.55);stroke-width:2.5px;}
+.t-icon{font-size:12px;text-anchor:middle;dominant-baseline:central;}
 .map-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--ink-soft);}
 .legend-item{display:flex;align-items:center;gap:5px;}
 .legend-dot{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.2);}
-/* capital pick phase */
-.cap-pick-overlay{position:absolute;inset:0;background:transparent;border-radius:16px;display:flex;align-items:flex-start;justify-content:center;z-index:10;pointer-events:none;}
-.cap-pick-msg{background:var(--bg);border-radius:0 0 18px 18px;padding:12px 20px;text-align:center;font-weight:700;box-shadow:4px 8px 16px var(--shadow-dark);pointer-events:none;opacity:.93;}
-.cap-timer-bar{height:6px;border-radius:3px;background:var(--accent-bg);margin-top:10px;overflow:hidden;box-shadow:inset 2px 2px 4px var(--shadow-dark),inset -2px -2px 4px var(--shadow-light);}
+/* capital pick */
+.cap-pick-bar{background:var(--bg);border-radius:14px;padding:10px 14px;margin-bottom:8px;box-shadow:4px 4px 8px var(--shadow-dark),-4px -4px 8px var(--shadow-light);font-size:13px;text-align:center;}
+.cap-timer-bar{height:6px;border-radius:3px;background:var(--accent-bg);margin-top:6px;overflow:hidden;box-shadow:inset 2px 2px 4px var(--shadow-dark),inset -2px -2px 4px var(--shadow-light);}
 .cap-timer-fill{height:100%;background:var(--accent);transition:width .9s linear;}
-/* action panel */
+/* actions */
 .action-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.action-btns .btn{width:100%;font-size:13px;padding:9px 6px;}
+.action-btns .btn{width:100%;font-size:12px;padding:8px 4px;}
 .log-box{border-radius:14px;padding:10px 12px;box-shadow:inset 3px 3px 6px var(--shadow-dark),inset -3px -3px 6px var(--shadow-light);height:190px;overflow-y:auto;font-size:12.5px;display:flex;flex-direction:column;gap:6px;}
 .log-line{color:var(--ink-soft);padding-bottom:5px;border-bottom:1px dashed var(--shadow-dark);}
 .log-line b{color:var(--ink);}
@@ -89,7 +88,7 @@ input[type=text],select{width:100%;padding:12px 14px;border-radius:14px;border:n
 .chat-input-row input{flex:1;}
 .emoji-row{display:flex;gap:6px;margin-top:8px;}
 .emoji-row button{background:var(--bg);border:none;border-radius:10px;font-size:16px;padding:5px 10px;cursor:pointer;box-shadow:3px 3px 6px var(--shadow-dark),-3px -3px 6px var(--shadow-light);}
-.modal-bg{position:fixed;inset:0;background:rgba(60,52,38,.42);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;}
+.modal-bg{position:fixed;inset:0;background:rgba(60,52,38,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;}
 .modal{background:var(--bg);border-radius:26px;padding:24px;max-width:420px;width:100%;text-align:center;box-shadow:12px 12px 24px var(--shadow-dark),-12px -12px 24px var(--shadow-light);}
 .rps-row{display:flex;gap:14px;justify-content:center;margin-top:18px;}
 .rps-btn{font-size:38px;background:var(--bg);border:none;border-radius:18px;width:76px;height:76px;cursor:pointer;box-shadow:6px 6px 12px var(--shadow-dark),-6px -6px 12px var(--shadow-light);}
@@ -101,10 +100,9 @@ input[type=text],select{width:100%;padding:12px 14px;border-radius:14px;border:n
 @media(max-width:760px){.side-panel{width:100%;}}
 </style>
 </head>
-<body>
-<div id="app"></div>
+<body><div id="app"></div>
 <script>
-/* ======= STORAGE ======= */
+/* ===== STORAGE ===== */
 async function apiGet(k){try{const r=await fetch('/api/state/'+encodeURIComponent(k));if(!r.ok)return null;return(await r.json()).value;}catch{return null;}}
 async function apiSet(k,v){try{await fetch('/api/state/'+encodeURIComponent(k),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:v})});}catch(e){console.error(e);}}
 async function loadRoom(c){return(await apiGet('room-'+c))||null;}
@@ -112,19 +110,20 @@ async function saveRoom(s){s.updatedAt=Date.now();await apiSet('room-'+s.code,s)
 async function saveMyId(c,id){try{localStorage.setItem('myid-'+c,id);}catch{}}
 async function loadMyId(c){try{return localStorage.getItem('myid-'+c);}catch{return null;}}
 
-/* ======= CONSTANTS ======= */
+/* ===== CONSTANTS ===== */
 const COLORS=[{hex:'#b23a34',name:'قرمز'},{hex:'#2f5f8a',name:'آبی'},{hex:'#4c7a4a',name:'سبز'},{hex:'#6b4c8a',name:'بنفش'},{hex:'#c07a2e',name:'نارنجی'}];
 const RPS=[{k:'rock',icon:'🪨',label:'سنگ'},{k:'paper',icon:'📄',label:'کاغذ'},{k:'scissors',icon:'✂️',label:'قیچی'}];
 const TURN_SECONDS=60;
-const CAPITAL_PICK_SECONDS=120; // ۲ دقیقه برای انتخاب پایتخت
+const CAPITAL_PICK_SECONDS=120;
+const CAPITAL_MOVE_ROUNDS=1; // انتقال پایتخت ۱ دور طول می‌کشد
 
 function rpsWinner(a,b){if(a===b)return'tie';if((a==='rock'&&b==='scissors')||(a==='scissors'&&b==='paper')||(a==='paper'&&b==='rock'))return'a';return'b';}
 function genCode(){return String(Math.floor(100000+Math.random()*900000));}
 function uid(){return Math.random().toString(36).slice(2,10);}
 
-/* ======= APP STATE ======= */
+/* ===== APP STATE ===== */
 let view='landing',code=null,myId=null,state=null,pollTimer=null,timeoutHandled=false;
-let ui={setupName:'',setupCapital:'',setupColor:null,joinCode:'',maxPlayers:3,
+let ui={setupName:'',setupColor:null,joinCode:'',maxPlayers:3,
   actionMode:null,selectedCity:null,giftFromCity:null,activeTab:'log',chatText:''};
 
 function el(h){const d=document.createElement('div');d.innerHTML=h.trim();return d.firstElementChild;}
@@ -140,7 +139,7 @@ function render(){
   app.appendChild(node);
 }
 
-/* ======= LANDING ======= */
+/* ===== LANDING ===== */
 function renderLanding(){
   const c=el(`<div class="card"><div class="title-row"><span class="crown">🏰</span></div>
     <h1 class="main-title">کِشورگُشایی</h1>
@@ -154,7 +153,7 @@ function renderLanding(){
   return c;
 }
 
-/* ======= CREATE ======= */
+/* ===== CREATE ===== */
 function renderCreate(){
   const c=el(`<div class="card">
     <h2 class="display" style="text-align:center;color:var(--accent)">ساخت اتاق جدید</h2>
@@ -162,7 +161,7 @@ function renderCreate(){
     <select id="maxP"><option value="2">۲ نفر</option><option value="3" selected>۳ نفر</option><option value="4">۴ نفر</option><option value="5">۵ نفر</option></select>
     <label>اسم کشور تو</label><input type="text" id="cName" placeholder="مثلاً: پارسیا">
     <label>رنگ کشور</label><div class="color-swatches" id="swatches"></div>
-    <div class="hint">🗺️ پایتخت را روی نقشه انتخاب می‌کنی — بعد از شروع بازی ۲ دقیقه فرصت داری!</div>
+    <div class="hint">🗺️ پایتخت را بعد از شروع روی نقشه انتخاب می‌کنی (۲ دقیقه وقت داری)</div>
     <div class="btn-row"><button class="btn btn-gold" id="go">ساخت اتاق</button><button class="btn" id="back">بازگشت</button></div>
   </div>`);
   const sw=c.querySelector('#swatches');
@@ -173,11 +172,11 @@ function renderCreate(){
   c.querySelector('#maxP').value=ui.maxPlayers;
   c.querySelector('#back').onclick=()=>{view='landing';render();};
   c.querySelector('#go').onclick=async()=>{
-    if(!ui.setupName.trim()||!ui.setupColor){alert('لطفاً اسم کشور و رنگ را انتخاب کن');return;}
+    if(!ui.setupName.trim()||!ui.setupColor){alert('اسم کشور و رنگ را انتخاب کن');return;}
     code=genCode();myId=uid();
     const ns={code,phase:'lobby',maxPlayers:ui.maxPlayers,hostId:myId,
-      players:[{id:myId,name:ui.setupName.trim(),capital:'',color:ui.setupColor,alive:true,colonyOf:null,colonyTurnsLeft:0,capitalCityId:null}],
-      cities:[],currentPlayerIndex:0,turnCount:0,usedAttackThisTurn:false,usedBuildThisTurn:false,
+      players:[{id:myId,name:ui.setupName.trim(),color:ui.setupColor,alive:true,colonyOf:null,colonyTurnsLeft:0,capitalCityId:null,pendingCapitalMove:null}],
+      cities:[],currentPlayerIndex:0,turnCount:0,usedAttackThisTurn:false,usedBuildThisTurn:false,usedCapMoveThisTurn:false,
       pendingBattle:null,pendingColonyChoice:null,log:[],chat:[],winnerId:null,version:0};
     state=ns;await saveMyId(code,myId);
     try{localStorage.setItem('lastCode',code);}catch{}
@@ -186,7 +185,7 @@ function renderCreate(){
   return c;
 }
 
-/* ======= JOIN ======= */
+/* ===== JOIN ===== */
 function renderJoin(){
   const c=el(`<div class="card">
     <h2 class="display" style="text-align:center;color:var(--accent)">پیوستن به اتاق</h2>
@@ -220,7 +219,6 @@ function renderJoinForm(){
     <div class="small" style="text-align:center;margin-bottom:8px;">بازیکنان: ${state.players.map(p=>p.name).join('، ')||'—'}</div>
     <label>اسم کشور تو</label><input type="text" id="cName" placeholder="مثلاً: پارسیا">
     <label>رنگ کشور</label><div class="color-swatches" id="swatches"></div>
-    <div class="hint">🗺️ پایتخت را روی نقشه انتخاب می‌کنی!</div>
     <div class="btn-row"><button class="btn btn-gold" id="go">پیوستن</button><button class="btn" id="back">بازگشت</button></div>
   </div>`);
   const sw=c.querySelector('#swatches');
@@ -229,11 +227,11 @@ function renderJoinForm(){
   c.querySelector('#cName').oninput=e=>ui.setupName=e.target.value;
   c.querySelector('#back').onclick=()=>{view='landing';render();};
   c.querySelector('#go').onclick=async()=>{
-    if(!ui.setupName.trim()||!ui.setupColor){alert('لطفاً همه فیلدها را پر کن');return;}
+    if(!ui.setupName.trim()||!ui.setupColor){alert('همه فیلدها را پر کن');return;}
     const fresh=await loadRoom(code);
     if(!fresh||fresh.phase!=='lobby'||fresh.players.length>=fresh.maxPlayers){alert('اتاق دیگر در دسترس نیست.');view='landing';render();return;}
     myId=uid();
-    fresh.players.push({id:myId,name:ui.setupName.trim(),capital:'',color:ui.setupColor,alive:true,colonyOf:null,colonyTurnsLeft:0,capitalCityId:null});
+    fresh.players.push({id:myId,name:ui.setupName.trim(),color:ui.setupColor,alive:true,colonyOf:null,colonyTurnsLeft:0,capitalCityId:null,pendingCapitalMove:null});
     fresh.version=(fresh.version||0)+1;state=fresh;
     await saveMyId(code,myId);try{localStorage.setItem('lastCode',code);}catch{}
     await saveRoom(state);view='lobby';startPolling();render();
@@ -241,7 +239,7 @@ function renderJoinForm(){
   return c;
 }
 
-/* ======= LOBBY ======= */
+/* ===== LOBBY ===== */
 function renderLobby(){
   const isHost=myId===state.hostId;
   const c=el(`<div class="card">
@@ -269,69 +267,77 @@ function renderLobby(){
     const colorObj=COLORS.find(cc=>!usedColors.includes(cc.hex));
     if(!colorObj){alert('رنگ آزادی نمانده.');return;}
     const ll=level==='easy'?'آسان':level==='medium'?'متوسط':'سخت';
-    state.players.push({id:'bot-'+uid(),name:'ربات '+ll,capital:'دژ ربات',color:colorObj.hex,alive:true,colonyOf:null,colonyTurnsLeft:0,isBot:true,botLevel:level,capitalCityId:null});
+    state.players.push({id:'bot-'+uid(),name:'ربات '+ll,color:colorObj.hex,alive:true,colonyOf:null,colonyTurnsLeft:0,isBot:true,botLevel:level,capitalCityId:null,pendingCapitalMove:null});
     state.version=(state.version||0)+1;await saveRoom(state);render();
   };}
   if(isHost){c.querySelector('#startBtn').onclick=async()=>{startGame();await saveRoom(state);view='game';render();};}
   return c;
 }
 
-/* =====================================================================
-   نقشه — ۵ قطعه خاکی کاملاً چسبیده به هم، بدون دریا بین بازیکنان فعال
-   هر قطعه = ۵ ناحیه (پایتخت مرکزی + ۴ شهر اطراف)
-   طرح: grid 3×3 کانال برای ۵ بازیکن — سرزمین‌ها با path های polygon
-   ===================================================================== */
+/* =================================================================
+   نقشه — ۵ سرزمین کاملاً خاکی و چسبیده، با فضای کافی برای برچسب
+   بوم: 800×540  — هر slot بزرگ‌تر، سرزمین‌ها وسیع‌تر
+   ================================================================= */
+const MAP_DEFS={
+  /* === SLOT 0 شمال‌غرب === */
+  s0_c:{slot:0,name:'دارالملک', cx:130,cy:155, path:'M60,85 L215,85 L230,170 L185,210 L85,210 L58,160 Z',
+        nb:['s0_n','s0_s','s0_e','s0_w','s1_c','s2_c']},
+  s0_n:{slot:0,name:'البرز',   cx:135,cy:45,  path:'M62,12 L218,12 L215,85 L60,85 Z',
+        nb:['s0_c','s1_n','s0_e']},
+  s0_s:{slot:0,name:'خلیج‌رود',cx:128,cy:268, path:'M58,210 L85,210 L185,210 L178,315 L88,325 L55,272 Z',
+        nb:['s0_c','s0_w','s2_n','s3_c']},
+  s0_e:{slot:0,name:'دشت سبز', cx:252,cy:140, path:'M215,85 L295,75 L308,195 L230,215 L185,210 L230,170 Z',
+        nb:['s0_c','s0_n','s1_c','s1_s']},
+  s0_w:{slot:0,name:'کوهستان', cx:30, cy:195, path:'M12,105 L60,85 L58,160 L85,210 L55,272 L12,248 Z',
+        nb:['s0_c','s0_s','s3_n']},
 
-/*
-  چیدمان روی بوم 750×500:
-  Slot0(شمال‌غرب)  Slot1(شمال‌شرق)
-       Slot2(مرکز)
-  Slot3(جنوب‌غرب)  Slot4(جنوب‌شرق)
+  /* === SLOT 1 شمال‌شرق === */
+  s1_c:{slot:1,name:'توران',   cx:435,cy:148, path:'M295,75 L450,75 L468,182 L420,215 L308,195 Z',
+        nb:['s1_n','s1_s','s1_e','s1_w','s0_c','s2_c']},
+  s1_n:{slot:1,name:'استپ',   cx:375,cy:38,  path:'M218,12 L498,12 L450,75 L295,75 L218,12 Z',
+        nb:['s1_c','s0_n','s1_e']},
+  s1_s:{slot:1,name:'مرو',    cx:385,cy:255, path:'M308,195 L420,215 L468,182 L478,298 L362,312 L290,282 Z',
+        nb:['s1_c','s1_e','s0_e','s2_c']},
+  s1_e:{slot:1,name:'سمرقند', cx:535,cy:135, path:'M450,75 L570,62 L592,212 L478,298 L468,182 Z',
+        nb:['s1_c','s1_n','s1_s','s4_c']},
+  s1_w:{slot:1,name:'خوارزم', cx:255,cy:45,  path:'M218,12 L295,75 L215,85 L218,12 Z',
+        nb:['s1_c','s0_n','s0_e']},
 
-  هر slot = یک بلاک 5-تایی با مرزهای دقیق polygon
-  برای ۲،۳،۴ بازیکن → slot های مجاور هستند و مرز مشترک دارند
-*/
+  /* === SLOT 2 مرکز === */
+  s2_c:{slot:2,name:'بابِل',  cx:285,cy:358, path:'M178,315 L290,282 L362,312 L375,400 L278,420 L168,398 Z',
+        nb:['s2_n','s2_s','s2_e','s2_w','s0_s','s1_s','s3_c','s4_c']},
+  s2_n:{slot:2,name:'آشور',   cx:225,cy:258, path:'M85,210 L185,210 L230,215 L290,282 L178,315 L88,325 Z',
+        nb:['s2_c','s2_w','s0_s','s0_c']},
+  s2_s:{slot:2,name:'سومر',   cx:278,cy:478, path:'M168,398 L278,420 L375,400 L358,508 L262,522 L158,508 Z',
+        nb:['s2_c','s2_e','s2_w','s3_e','s4_w']},
+  s2_e:{slot:2,name:'ماد',    cx:422,cy:362, path:'M362,312 L478,298 L498,410 L382,438 L375,400 Z',
+        nb:['s2_c','s2_s','s1_s','s4_c']},
+  s2_w:{slot:2,name:'میتانی', cx:108,cy:368, path:'M55,272 L88,325 L168,398 L158,508 L58,488 L32,372 Z',
+        nb:['s2_c','s2_n','s2_s','s0_s','s3_c']},
 
-// تعریف کامل نقشه — همه سرزمین‌ها خاکی و چسبیده
-// کوئوردینات‌ها روی بوم 750×520
-const MAP_DEFS = {
-  // ========= SLOT 0 — شمال غرب =========
-  s0_c:{ slot:0, name:'دارالملک',   cap:true,  cx:138,cy:148, path:'M70,80 L210,80 L220,160 L180,200 L95,200 L70,155 Z', nb:['s0_n','s0_s','s0_e','s0_w','s1_c','s2_c'] },
-  s0_n:{ slot:0, name:'البرز',       cap:false, cx:138,cy:48,  path:'M72,14 L208,14 L210,80 L70,80 Z',                   nb:['s0_c','s1_n'] },
-  s0_s:{ slot:0, name:'خلیج‌رود',   cap:false, cx:135,cy:252, path:'M70,200 L95,200 L180,200 L175,300 L95,310 L62,260 Z', nb:['s0_c','s0_w','s2_n','s3_c'] },
-  s0_e:{ slot:0, name:'دشت‌سبز',    cap:false, cx:240,cy:132, path:'M210,80 L280,72 L290,180 L220,200 L180,200 L220,160 Z', nb:['s0_c','s0_n','s1_c','s1_s'] },
-  s0_w:{ slot:0, name:'کوهستان',    cap:false, cx:36, cy:185, path:'M14,100 L70,80 L70,155 L95,200 L62,260 L14,240 Z',  nb:['s0_c','s0_s','s3_n'] },
+  /* === SLOT 3 جنوب‌غرب === */
+  s3_c:{slot:3,name:'فنیق',   cx:65, cy:408, path:'M12,318 L55,272 L32,372 L58,488 L35,528 L12,488 Z',
+        nb:['s3_n','s3_s','s3_e','s0_s','s2_w']},
+  s3_n:{slot:3,name:'ارارات', cx:28, cy:278, path:'M12,248 L55,272 L12,318 Z',
+        nb:['s3_c','s0_w','s0_s']},
+  s3_s:{slot:3,name:'صحرا',   cx:52, cy:508, path:'M35,528 L58,488 L158,508 L148,538 L12,538 Z',
+        nb:['s3_c','s3_e']},
+  s3_e:{slot:3,name:'کنعان',  cx:170,cy:510, path:'M58,488 L168,398 L262,522 L148,538 L58,488 Z',
+        nb:['s3_c','s3_s','s2_s','s4_w']},
 
-  // ========= SLOT 1 — شمال شرق =========
-  s1_c:{ slot:1, name:'توران',       cap:true,  cx:420,cy:148, path:'M280,72 L430,72 L450,170 L410,200 L290,180 Z',      nb:['s1_n','s1_s','s1_e','s1_w','s0_c','s2_c'] },
-  s1_n:{ slot:1, name:'استپ',        cap:false, cx:360,cy:38,  path:'M208,14 L480,14 L430,72 L280,72 L208,14 Z',         nb:['s1_c','s0_n','s1_e'] },
-  s1_s:{ slot:1, name:'مرو',         cap:false, cx:370,cy:240, path:'M290,180 L410,200 L450,170 L460,280 L350,295 L280,270 Z', nb:['s1_c','s1_e','s0_e','s2_c'] },
-  s1_e:{ slot:1, name:'سمرقند',     cap:false, cx:512,cy:128, path:'M430,72 L540,60 L560,200 L460,280 L450,170 Z',      nb:['s1_c','s1_n','s1_s','s4_c'] },
-  s1_w:{ slot:1, name:'خوارزم',     cap:false, cx:248,cy:46,  path:'M208,14 L280,72 L210,80 L208,14 Z',                nb:['s1_c','s0_n','s0_e'] },
-
-  // ========= SLOT 2 — مرکز =========
-  s2_c:{ slot:2, name:'بابِل',       cap:true,  cx:280,cy:340, path:'M175,300 L280,270 L350,295 L360,380 L270,400 L165,380 Z', nb:['s2_n','s2_s','s2_e','s2_w','s0_c','s1_c','s3_c','s4_c'] },
-  s2_n:{ slot:2, name:'آشور',        cap:false, cx:220,cy:248, path:'M95,200 L180,200 L220,200 L280,270 L175,300 L95,310 Z', nb:['s2_c','s2_w','s0_s','s0_c'] },
-  s2_s:{ slot:2, name:'سومر',        cap:false, cx:265,cy:460, path:'M165,380 L270,400 L360,380 L345,490 L255,505 L160,490 Z', nb:['s2_c','s2_e','s2_w','s3_e','s4_w'] },
-  s2_e:{ slot:2, name:'ماد',         cap:false, cx:405,cy:345, path:'M350,295 L460,280 L480,390 L370,420 L360,380 Z',   nb:['s2_c','s2_s','s1_s','s4_c'] },
-  s2_w:{ slot:2, name:'میتانی',     cap:false, cx:115,cy:350, path:'M62,260 L95,310 L165,380 L160,490 L65,470 L40,360 Z', nb:['s2_c','s2_n','s2_s','s0_s','s3_c'] },
-
-  // ========= SLOT 3 — جنوب غرب =========
-  s3_c:{ slot:3, name:'فنیق',        cap:true,  cx:70, cy:390, path:'M14,310 L62,260 L40,360 L65,470 L40,510 L14,470 Z', nb:['s3_n','s3_s','s3_e','s0_s','s2_c'] },
-  s3_n:{ slot:3, name:'ارارات',      cap:false, cx:26, cy:270, path:'M14,240 L62,260 L14,310 Z',                        nb:['s3_c','s0_w','s0_s'] },
-  s3_s:{ slot:3, name:'صحرای غرب',  cap:false, cx:55, cy:490, path:'M40,510 L65,470 L160,490 L150,520 L14,520 Z',     nb:['s3_c','s3_e'] },
-  s3_e:{ slot:3, name:'کنعان',       cap:false, cx:175,cy:490, path:'M65,470 L165,380 L255,505 L150,520 L65,470 Z',   nb:['s3_c','s3_s','s2_s','s4_w'] },
-  // s3 has no s3_w (edge of map)
-
-  // ========= SLOT 4 — جنوب شرق =========
-  s4_c:{ slot:4, name:'خراسان',      cap:true,  cx:530,cy:340, path:'M460,280 L560,200 L620,280 L610,420 L480,390 Z',  nb:['s4_n','s4_s','s4_e','s4_w','s1_e','s2_c'] },
-  s4_n:{ slot:4, name:'فرغانه',     cap:false, cx:590,cy:148, path:'M540,60 L680,60 L680,200 L620,280 L560,200 Z',   nb:['s4_c','s4_e','s1_e'] },
-  s4_s:{ slot:4, name:'سیستان',     cap:false, cx:555,cy:468, path:'M480,390 L610,420 L650,510 L440,520 L345,490 L370,420 Z', nb:['s4_c','s4_e','s4_w','s2_s','s2_e'] },
-  s4_e:{ slot:4, name:'غزنه',       cap:false, cx:670,cy:330, path:'M620,280 L680,200 L736,280 L736,440 L650,510 L610,420 Z', nb:['s4_c','s4_n','s4_s'] },
-  s4_w:{ slot:4, name:'زابل',       cap:false, cx:380,cy:460, path:'M345,490 L370,420 L480,390 L440,520 Z',          nb:['s4_c','s4_s','s2_s','s3_e'] },
+  /* === SLOT 4 جنوب‌شرق === */
+  s4_c:{slot:4,name:'خراسان', cx:548,cy:358, path:'M478,298 L592,212 L642,302 L628,438 L498,410 Z',
+        nb:['s4_n','s4_s','s4_e','s4_w','s1_e','s2_e']},
+  s4_n:{slot:4,name:'فرغانه', cx:615,cy:148, path:'M570,62 L712,62 L712,212 L642,302 L592,212 Z',
+        nb:['s4_c','s4_e','s1_e']},
+  s4_s:{slot:4,name:'سیستان', cx:570,cy:482, path:'M498,410 L628,438 L668,528 L448,535 L358,508 L382,438 Z',
+        nb:['s4_c','s4_e','s4_w','s2_s','s2_e']},
+  s4_e:{slot:4,name:'غزنه',   cx:692,cy:348, path:'M642,302 L712,212 L788,302 L788,455 L668,528 L628,438 Z',
+        nb:['s4_c','s4_n','s4_s']},
+  s4_w:{slot:4,name:'زابل',   cx:390,cy:478, path:'M358,508 L382,438 L498,410 L448,535 Z',
+        nb:['s4_c','s4_s','s2_s','s3_e']},
 };
 
-// اتصال فعال slot ها بر اساس تعداد بازیکن
 const SLOT_ACTIVE={2:[0,1],3:[0,1,2],4:[0,1,3,4],5:[0,1,2,3,4]};
 
 function buildMap(players){
@@ -345,55 +351,50 @@ function buildMap(players){
       if(td.slot!==slot)return;
       cities.push({
         id:tid,ownerId:pl.id,
-        isCapital:false, // پایتخت بعداً توسط بازیکن انتخاب می‌شود
+        isCapital:false,         // انتخاب پایتخت توسط بازیکن
         hasCastle:false,construction:null,
         mapPath:td.path,mapCx:td.cx,mapCy:td.cy,mapName:td.name,
+        // FIX: همه همسایه‌های فعال — نه فقط مرز بین slot‌ها
         neighborIds:td.nb.filter(nid=>activeIds.includes(nid)),
-        row:slot,col:td.cap?0:1
+        row:slot,col:0
       });
     });
   });
-  return{cities,mapWidth:750,mapHeight:520};
+  return{cities};
 }
 
 function startGame(){
-  const{cities,mapWidth,mapHeight}=buildMap(state.players);
-  state.cities=cities;state.mapWidth=mapWidth;state.mapHeight=mapHeight;
-  state.phase='capital-pick'; // فاز انتخاب پایتخت
+  const{cities}=buildMap(state.players);
+  state.cities=cities;
+  state.phase='capital-pick';
   state.capitalPickStartedAt=Date.now();
   state.currentPlayerIndex=0;state.turnCount=1;state.roundNumber=1;
   state.roundAnchorId=state.players[0].id;
-  state.usedAttackThisTurn=false;state.usedBuildThisTurn=false;
-  state.pendingBattle=null;state.pendingColonyChoice=null;
-  state.log=[{turn:0,text:'🗺️ بازی آغاز شد! هر بازیکن ۲ دقیقه فرصت دارد پایتخت خود را روی نقشه انتخاب کند.'}];
-  state.chat=[];state.winnerId=null;
-  state.players.forEach(p=>{p.colonyOf=null;p.colonyTurnsLeft=0;p.capitalCityId=null;});
+  state.usedAttackThisTurn=false;state.usedBuildThisTurn=false;state.usedCapMoveThisTurn=false;
+  state.pendingBattle=null;state.pendingColonyChoice=null;state.winnerId=null;
+  state.log=[{turn:0,text:'🗺️ بازی شروع شد! هر بازیکن ۲ دقیقه فرصت دارد پایتخت خود را روی نقشه انتخاب کند.'}];
+  state.chat=[];
+  state.players.forEach(p=>{p.colonyOf=null;p.colonyTurnsLeft=0;p.capitalCityId=null;p.pendingCapitalMove=null;});
   state.version=(state.version||0)+1;
 }
 
-function allCapitalsChosen(){
-  return state.players.every(p=>p.isBot||p.capitalCityId);
-}
+function allCapitalsChosen(){return state.players.every(p=>p.isBot||p.capitalCityId);}
 function assignBotCapitals(){
   state.players.forEach(p=>{
     if(!p.isBot||p.capitalCityId)return;
-    const myCities=state.cities.filter(c=>c.ownerId===p.id&&!c.isCapital);
-    if(myCities.length>0){
-      const pick=myCities[Math.floor(Math.random()*myCities.length)];
-      p.capitalCityId=pick.id;pick.isCapital=true;
-      state.log.push({turn:0,text:'🤖 '+p.name+' شهر '+pick.mapName+' را به‌عنوان پایتخت انتخاب کرد.'});
-    }
+    const opts=state.cities.filter(c=>c.ownerId===p.id);
+    if(opts.length){const pick=opts[Math.floor(Math.random()*opts.length)];p.capitalCityId=pick.id;pick.isCapital=true;
+      state.log.push({turn:0,text:'🤖 '+p.name+' شهر '+pick.mapName+' را پایتخت کرد.'});}
   });
 }
 async function finishCapitalPick(){
-  // ربات‌ها
   assignBotCapitals();
-  // بازیکنان انسانی که وقت‌شان تمام شده → اولین شهر
+  // بازیکنانی که انتخاب نکردند → اولین شهرشان
   state.players.forEach(p=>{
     if(p.isBot||p.capitalCityId)return;
-    const myCities=state.cities.filter(c=>c.ownerId===p.id);
-    if(myCities.length>0){myCities[0].isCapital=true;p.capitalCityId=myCities[0].id;
-      state.log.push({turn:0,text:'⏰ '+p.name+' پایتخت انتخاب نکرد — به‌صورت خودکار تعیین شد.'});}
+    const opts=state.cities.filter(c=>c.ownerId===p.id);
+    if(opts.length){opts[0].isCapital=true;p.capitalCityId=opts[0].id;
+      state.log.push({turn:0,text:'⏰ '+p.name+' پایتخت انتخاب نکرد — خودکار تعیین شد.'});}
   });
   state.phase='playing';
   state.turnStartedAt=Date.now();
@@ -401,11 +402,13 @@ async function finishCapitalPick(){
   await pushState();
 }
 
-/* ======= GAME HELPERS ======= */
+/* ===== HELPERS ===== */
 function cityById(id){return state.cities.find(c=>c.id===id);}
 function playerById(id){return state.players.find(p=>p.id===id);}
 function currentPlayer(){return state.players[state.currentPlayerIndex];}
 function isMyTurn(){return currentPlayer()&&currentPlayer().id===myId;}
+
+// FIX: همه همسایه‌های فعال به‌عنوان هدف حمله
 function landNeighbors(city){
   if(city.neighborIds)return city.neighborIds.map(nid=>cityById(nid)).filter(Boolean);
   return[];
@@ -416,54 +419,87 @@ function attackTargets(city){
   landNeighbors(city).forEach(n=>{
     if(n.ownerId===city.ownerId)return;
     if(owner&&owner.colonyOf&&n.ownerId===owner.colonyOf)return;
+    // FIX: بازیکن منحل‌شده نمی‌تواند دفاع کند — شهرهایش قابل تصرف بدون نبرد
     targets.set(n.id,n);
   });
   return[...targets.values()];
 }
 function cityCount(pid){return state.cities.filter(c=>c.ownerId===pid).length;}
+
 function checkElimination(){
   state.players.forEach(p=>{
     if(p.alive&&cityCount(p.id)===0){p.alive=false;
-      state.log.push({turn:state.turnCount,text:'💀 '+p.name+' تمام سرزمین‌هایش را از دست داد.'});}
+      state.log.push({turn:state.turnCount,text:'💀 '+p.name+' تمام سرزمین‌ها را از دست داد و منحل شد.'});}
   });
   const ap=state.players.filter(p=>p.alive);
   if(ap.length<=1&&state.phase==='playing'){
     state.phase='ended';state.winnerId=ap.length===1?ap[0].id:null;
-    state.log.push({turn:state.turnCount,text:ap.length===1?'👑 '+ap[0].name+' برنده شد!':'🏳️ بازی بدون برنده پایان یافت.'});
+    state.log.push({turn:state.turnCount,text:ap.length===1?'👑 '+ap[0].name+' برنده شد!':'🏳️ بازی بدون برنده تمام شد.'});
   }
 }
+
 function advanceConstructions(){
   state.cities.forEach(c=>{
-    if(c.construction){
-      if((state.roundNumber||1)-c.construction.startRound>=2){
-        c.hasCastle=true;
-        state.log.push({turn:state.turnCount,text:'🏰 قلعه در '+cityDisplayName(c)+' تکمیل شد.'});
-        c.construction=null;
-      }
+    if(c.construction&&(state.roundNumber||1)-c.construction.startRound>=2){
+      c.hasCastle=true;
+      state.log.push({turn:state.turnCount,text:'🏰 قلعه در '+cityDisplayName(c)+' تکمیل شد.'});
+      c.construction=null;
     }
   });
 }
+
+// FIX: انتقال پایتخت معلق را تکمیل کن
+function advanceCapitalMoves(){
+  state.players.forEach(p=>{
+    if(!p.pendingCapitalMove)return;
+    const pm=p.pendingCapitalMove;
+    if((state.roundNumber||1)-pm.startRound>=CAPITAL_MOVE_ROUNDS){
+      const oldCap=cityById(pm.fromCityId);
+      const newCap=cityById(pm.toCityId);
+      if(oldCap)oldCap.isCapital=false;
+      if(newCap&&newCap.ownerId===p.id){
+        newCap.isCapital=true;p.capitalCityId=pm.toCityId;
+        state.log.push({turn:state.turnCount,text:'🏛️ انتقال پایتخت '+p.name+' به '+newCap.mapName+' تکمیل شد!'});
+      }else{
+        if(oldCap){oldCap.isCapital=true;} // برگشت
+        state.log.push({turn:state.turnCount,text:'❌ انتقال پایتخت '+p.name+' ناموفق بود (شهر مقصد از دست رفت).'});
+      }
+      p.pendingCapitalMove=null;
+    }
+  });
+}
+
 function cityDisplayName(c){const own=playerById(c.ownerId);return(c.isCapital?'★ ':'')+c.mapName+' ('+(own?own.name:'بی‌صاحب')+')';}
 async function pushState(){state.version=(state.version||0)+1;await saveRoom(state);render();}
+
 function nextTurn(){
   checkElimination();if(state.phase!=='playing')return;
   let idx=state.currentPlayerIndex;
   for(let i=0;i<state.players.length;i++){idx=(idx+1)%state.players.length;if(state.players[idx].alive)break;}
   state.currentPlayerIndex=idx;state.turnCount++;
-  state.usedAttackThisTurn=false;state.usedBuildThisTurn=false;
+  state.usedAttackThisTurn=false;state.usedBuildThisTurn=false;state.usedCapMoveThisTurn=false;
   state.turnStartedAt=Date.now();
   const cp=currentPlayer();
   if(!state.roundAnchorId||!playerById(state.roundAnchorId)||!playerById(state.roundAnchorId).alive)state.roundAnchorId=cp.id;
   if(cp.id===state.roundAnchorId)state.roundNumber=(state.roundNumber||1)+1;
   advanceConstructions();
+  advanceCapitalMoves();
   if(cp.colonyOf){cp.colonyTurnsLeft=(cp.colonyTurnsLeft||0)-1;
     if(cp.colonyTurnsLeft<=0){state.log.push({turn:state.turnCount,text:'🔓 '+cp.name+' آزاد شد.'});cp.colonyOf=null;cp.colonyTurnsLeft=0;}}
   state.log.push({turn:state.turnCount,text:'▶️ نوبت '+cp.name+' رسید.'});
 }
 
-/* ======= ACTIONS ======= */
+/* ===== ACTIONS ===== */
 async function declareAttack(srcId,tgtId){
   const tgt=cityById(tgtId);
+  // FIX: اگر مالک شهر منحل شده، تصرف بدون نبرد
+  const defP=playerById(tgt.ownerId);
+  if(defP&&!defP.alive){
+    tgt.ownerId=myId;tgt.hasCastle=false;
+    state.usedAttackThisTurn=true;
+    state.log.push({turn:state.turnCount,text:'🏳️ '+currentPlayer().name+' سرزمین رهاشده '+cityDisplayName(tgt)+' را تصرف کرد.'});
+    ui.actionMode=null;ui.selectedCity=null;checkElimination();await pushState();return;
+  }
   state.pendingBattle={attackerCity:srcId,defenderCity:tgtId,attackerId:myId,defenderId:tgt.ownerId,stage:1,attackerChoice:null,defenderChoice:null};
   state.usedAttackThisTurn=true;
   state.log.push({turn:state.turnCount,text:'⚔️ '+currentPlayer().name+' به '+cityDisplayName(tgt)+' حمله کرد.'});
@@ -491,52 +527,73 @@ function resolveBattleStage(){
   if(w==='tie'){state.log.push({turn:state.turnCount,text:'🤝 مساوی! دوباره...'});pb.attackerChoice=null;pb.defenderChoice=null;return;}
   const aw=w==='a';
   if(tgt.hasCastle&&pb.stage===1){
-    if(aw){tgt.hasCastle=false;state.log.push({turn:state.turnCount,text:'🏰💥 قلعه تخریب شد!'});pb.stage=2;pb.attackerChoice=null;pb.defenderChoice=null;return;}
+    if(aw){tgt.hasCastle=false;state.log.push({turn:state.turnCount,text:'🏰💥 قلعه تخریب شد! نبرد ادامه دارد...'});pb.stage=2;pb.attackerChoice=null;pb.defenderChoice=null;return;}
     else{state.log.push({turn:state.turnCount,text:'🛡️ قلعه حمله را دفع کرد!'});state.pendingBattle=null;return;}
   }
   if(aw){
+    // FIX: قبل از انتقال مالکیت، علامت پایتخت را از شهر حذف می‌کنیم — پایتخت مهاجم تغییر نمی‌کند
+    const wasCapital=tgt.isCapital;
+    const prevOwnerId=tgt.ownerId;
     tgt.ownerId=pb.attackerId;
-    state.log.push({turn:state.turnCount,text:'🚩 '+atkP.name+' '+cityDisplayName(tgt)+' را تصرف کرد!'});
-    if(tgt.isCapital&&defP){
+    tgt.isCapital=false; // شهر تصرف‌شده دیگر پایتخت نیست
+    state.log.push({turn:state.turnCount,text:'🚩 '+atkP.name+' سرزمین '+tgt.mapName+' را تصرف کرد!'});
+    if(wasCapital&&defP){
+      // پایتخت از دست رفت — defP باید مستعمره/انحلال انتخاب کند
+      defP.capitalCityId=null; // FIX: پایتخت defP دیگر وجود ندارد
       state.pendingColonyChoice={defenderId:defP.id,attackerId:atkP.id,cityId:tgt.id,defenderDecision:null};
-      state.log.push({turn:state.turnCount,text:'👑💔 پایتخت '+defP.name+' سقوط کرد!'});
+      state.log.push({turn:state.turnCount,text:'👑💔 پایتخت '+defP.name+' سقوط کرد! باید انتخاب کند: مستعمره یا انحلال.'});
     }
-  }else{state.log.push({turn:state.turnCount,text:'🛡️ '+defP.name+' دفاع کرد.'});}
+  }else{state.log.push({turn:state.turnCount,text:'🛡️ '+defP.name+' با موفقیت دفاع کرد.'});}
   state.pendingBattle=null;checkElimination();
 }
 async function submitColonyChoice(choice){
   const fresh=await loadRoom(code);if(fresh)state=fresh;
   const pc=state.pendingColonyChoice;if(!pc)return;
   const defP=playerById(pc.defenderId),atkP=playerById(pc.attackerId);
-  if(choice==='dissolve'){defP.alive=false;state.log.push({turn:state.turnCount,text:'💀 '+defP.name+' منحل شد.'});state.pendingColonyChoice=null;checkElimination();}
-  else{pc.defenderDecision='colony';state.log.push({turn:state.turnCount,text:'📨 '+defP.name+' درخواست مستعمره داد...'});}
+  if(choice==='dissolve'){
+    defP.alive=false;
+    // FIX: شهرهای بازیکن منحل‌شده آزاد نمی‌شوند — مهاجم می‌تواند همه را تصرف کند
+    state.log.push({turn:state.turnCount,text:'💀 '+defP.name+' منحل شد. سرزمین‌هایش بی‌دفاع است — هر کسی می‌تواند تصرفشان کند.'});
+    state.pendingColonyChoice=null;checkElimination();
+  }else{pc.defenderDecision='colony';state.log.push({turn:state.turnCount,text:'📨 '+defP.name+' درخواست مستعمره داد...'});}
   await pushState();
 }
 async function submitOverlordDecision(accept){
   const fresh=await loadRoom(code);if(fresh)state=fresh;
   const pc=state.pendingColonyChoice;if(!pc)return;
   const defP=playerById(pc.defenderId),atkP=playerById(pc.attackerId);
-  if(accept){defP.colonyOf=atkP.id;defP.colonyTurnsLeft=5;state.log.push({turn:state.turnCount,text:'🤝 '+defP.name+' مستعمره شد.'});}
-  else{defP.alive=false;state.log.push({turn:state.turnCount,text:'❌ '+defP.name+' منحل شد.'});checkElimination();}
+  if(accept){defP.colonyOf=atkP.id;defP.colonyTurnsLeft=5;state.log.push({turn:state.turnCount,text:'🤝 '+atkP.name+' پذیرفت؛ '+defP.name+' مستعمره شد.'});}
+  else{defP.alive=false;state.log.push({turn:state.turnCount,text:'❌ درخواست رد شد؛ '+defP.name+' منحل شد. سرزمین‌هایش بی‌دفاع است.'});checkElimination();}
   state.pendingColonyChoice=null;await pushState();
 }
 async function startBuild(cityId){
   const c=cityById(cityId);c.construction={startRound:state.roundNumber||1};state.usedBuildThisTurn=true;
-  state.log.push({turn:state.turnCount,text:'🏗️ ساخت قلعه در '+cityDisplayName(c)+' آغاز شد.'});
+  state.log.push({turn:state.turnCount,text:'🏗️ ساخت قلعه در '+cityDisplayName(c)+' آغاز شد. (۲ دور طول می‌کشد)'});
+  ui.actionMode=null;ui.selectedCity=null;await pushState();
+}
+// FIX: انتقال پایتخت — ۱ دور طول می‌کشد
+async function startCapitalMove(toCityId){
+  const me=playerById(myId);
+  const fromCity=cityById(me.capitalCityId);
+  const toCity=cityById(toCityId);
+  if(!fromCity||!toCity||toCity.ownerId!==myId)return;
+  if(me.pendingCapitalMove){state.log.push({turn:state.turnCount,text:'⚠️ یک انتقال پایتخت در جریان است.'});return;}
+  me.pendingCapitalMove={fromCityId:me.capitalCityId,toCityId,startRound:state.roundNumber||1};
+  state.usedCapMoveThisTurn=true;
+  state.log.push({turn:state.turnCount,text:'🏛️ '+me.name+' درخواست انتقال پایتخت به '+toCity.mapName+' داد. (۱ دور طول می‌کشد)'});
   ui.actionMode=null;ui.selectedCity=null;await pushState();
 }
 async function doGift(cityId,targetPlayerId){
   const c=cityById(cityId),from=playerById(c.ownerId),to=playerById(targetPlayerId);
   c.ownerId=targetPlayerId;
-  if(!to.alive){to.alive=true;to.colonyOf=null;to.colonyTurnsLeft=0;state.log.push({turn:state.turnCount,text:'🕊️ '+from.name+' '+to.name+' را با هدیه برگرداند!'});}
-  else state.log.push({turn:state.turnCount,text:'🎁 '+from.name+' '+cityDisplayName(c)+' را به '+to.name+' هدیه داد.'});
+  if(!to.alive){to.alive=true;to.colonyOf=null;to.colonyTurnsLeft=0;state.log.push({turn:state.turnCount,text:'🕊️ '+from.name+' با هدیه شهر '+c.mapName+' به '+to.name+'، او را بازگرداند!'});}
+  else{state.log.push({turn:state.turnCount,text:'🎁 '+from.name+' سرزمین '+c.mapName+' را به '+to.name+' هدیه داد.'});}
   ui.actionMode=null;ui.selectedCity=null;ui.giftFromCity=null;checkElimination();await pushState();
 }
 async function doSurrender(){
-  if(!confirm('تسلیم می‌شوی؟'))return;
+  if(!confirm('تسلیم می‌شوی؟ تمام سرزمین‌هایت بی‌دفاع می‌شوند.'))return;
   const me=playerById(myId);me.alive=false;
-  state.cities.forEach(c=>{if(c.ownerId===myId){c.ownerId=null;c.hasCastle=false;c.construction=null;}});
-  state.log.push({turn:state.turnCount,text:'🏳️ '+me.name+' تسلیم شد.'});
+  state.log.push({turn:state.turnCount,text:'🏳️ '+me.name+' تسلیم شد. سرزمین‌هایش بی‌دفاع است.'});
   if(isMyTurn())nextTurn();else checkElimination();await pushState();
 }
 async function endTurn(){nextTurn();await pushState();}
@@ -547,55 +604,45 @@ async function sendChat(){
   ui.chatText='';await pushState();
 }
 
-/* ======= TIMER ======= */
-// FIX سرعت: تایمر فقط DOM رو آپدیت می‌کنه، render نمی‌زنه
+/* ===== TIMER ===== */
 function tickTimer(){
   if(!state)return;
-  // تایمر انتخاب پایتخت
   if(state.phase==='capital-pick'&&state.capitalPickStartedAt){
     const rem=Math.max(0,CAPITAL_PICK_SECONDS-Math.floor((Date.now()-state.capitalPickStartedAt)/1000));
     const el2=document.getElementById('capTimerNum');if(el2)el2.textContent=rem;
-    const fill=document.getElementById('capTimerFill');
-    if(fill)fill.style.width=(rem/CAPITAL_PICK_SECONDS*100)+'%';
-    if(rem<=0&&view==='game'){
-      // فقط host یا اولین بازیکن فعال finish می‌کند
-      if(myId===state.hostId)finishCapitalPick();
-    }
+    const fill=document.getElementById('capTimerFill');if(fill)fill.style.width=(rem/CAPITAL_PICK_SECONDS*100)+'%';
+    if(rem<=0&&myId===state.hostId)finishCapitalPick();
     return;
   }
   if(view!=='game'||state.phase!=='playing'||!state.turnStartedAt)return;
-  const remaining=Math.max(0,TURN_SECONDS-Math.floor((Date.now()-state.turnStartedAt)/1000));
-  const numEl=document.getElementById('turnTimerNum');
-  const badgeEl=document.getElementById('timerBadge');
-  if(numEl){numEl.textContent=remaining;if(badgeEl)badgeEl.classList.toggle('warn',remaining<=10);}
-  if(remaining<=0)handleTurnTimeout();
+  const rem=Math.max(0,TURN_SECONDS-Math.floor((Date.now()-state.turnStartedAt)/1000));
+  const numEl=document.getElementById('turnTimerNum'),badgeEl=document.getElementById('timerBadge');
+  if(numEl){numEl.textContent=rem;if(badgeEl)badgeEl.classList.toggle('warn',rem<=10);}
+  if(rem<=0)handleTurnTimeout();
 }
 async function handleTurnTimeout(){
   if(timeoutHandled)return;timeoutHandled=true;
   try{
     const fresh=await loadRoom(code);
     if(fresh&&fresh.phase==='playing'&&fresh.turnStartedAt===state.turnStartedAt){
-      state=fresh;const cp=currentPlayer();
-      state.log.push({turn:state.turnCount,text:'⏰ وقت '+cp.name+' تمام شد.'});
+      state=fresh;state.log.push({turn:state.turnCount,text:'⏰ وقت '+currentPlayer().name+' تمام شد.'});
       nextTurn();await pushState();
     }else if(fresh){state=fresh;render();}
   }finally{timeoutHandled=false;}
 }
 setInterval(tickTimer,1000);
 
-/* ======= BOT AI ======= */
+/* ===== BOT ===== */
 let botActing=false;
-// FIX سرعت: تاخیر ربات کمتر شد (300-700ms به جای 900-1800ms)
 function botDelay(){return new Promise(r=>setTimeout(r,300+Math.random()*400));}
 function counterOf(ch){return ch==='rock'?'paper':ch==='paper'?'scissors':'rock';}
-function botChoiceRPS(bot,opponentId){
+function botChoiceRPS(bot,oppId){
   const opts=['rock','paper','scissors'],rnd=()=>opts[Math.floor(Math.random()*3)];
   if(bot.botLevel==='easy')return rnd();
-  const hist=state.rpsHistory&&state.rpsHistory[opponentId];
+  const hist=state.rpsHistory&&state.rpsHistory[oppId];
   const total=hist?hist.rock+hist.paper+hist.scissors:0;
-  if(bot.botLevel==='medium'){if(total>=2&&Math.random()<.5){return counterOf(Object.entries(hist).sort((a,b)=>b[1]-a[1])[0][0]);}return rnd();}
-  if(total>0)return counterOf(Object.entries(hist).sort((a,b)=>b[1]-a[1])[0][0]);
-  return rnd();
+  if(bot.botLevel==='medium'){if(total>=2&&Math.random()<.5)return counterOf(Object.entries(hist).sort((a,b)=>b[1]-a[1])[0][0]);return rnd();}
+  if(total>0)return counterOf(Object.entries(hist).sort((a,b)=>b[1]-a[1])[0][0]);return rnd();
 }
 async function runBotTurn(bot){
   const myCities=state.cities.filter(c=>c.ownerId===bot.id);
@@ -612,25 +659,22 @@ async function runBotTurn(bot){
     }
   }
   if(state.phase==='playing'&&!state.pendingBattle&&!state.pendingColonyChoice){
+    const botAlreadyBuilding=state.cities.some(c=>c.ownerId===bot.id&&c.construction);
     const bp=bot.botLevel==='easy'?.2:bot.botLevel==='medium'?.5:.8;
-    if(!state.usedBuildThisTurn&&Math.random()<bp){
-      const botAlreadyBuilding=state.cities.some(c=>c.ownerId===bot.id&&c.construction);
-      const bl=botAlreadyBuilding?[]:state.cities.filter(c=>c.ownerId===bot.id&&!c.hasCastle&&!c.construction);
-      if(bl.length>0)await startBuild(bl[Math.floor(Math.random()*bl.length)].id);
+    if(!state.usedBuildThisTurn&&!botAlreadyBuilding&&Math.random()<bp){
+      const bl=state.cities.filter(c=>c.ownerId===bot.id&&!c.hasCastle&&!c.construction);
+      if(bl.length)await startBuild(bl[Math.floor(Math.random()*bl.length)].id);
     }
   }
   if(state.phase==='playing'&&!state.pendingBattle&&!state.pendingColonyChoice)await endTurn();
 }
 async function maybeRunBot(){
   if(botActing)return;
-  // capital pick — ربات‌ها فوری پایتخت انتخاب می‌کنند
   if(state&&state.phase==='capital-pick'){
     const needBot=state.players.some(p=>p.isBot&&!p.capitalCityId);
     if(needBot&&myId===state.hostId){
-      botActing=true;
-      const fresh=await loadRoom(code);if(fresh)state=fresh;
+      botActing=true;const fresh=await loadRoom(code);if(fresh)state=fresh;
       assignBotCapitals();
-      // اگر همه انسان‌ها هم انتخاب کردند شروع کن
       if(allCapitalsChosen())await finishCapitalPick();
       else{state.version=(state.version||0)+1;await saveRoom(state);render();}
       botActing=false;return;
@@ -652,13 +696,11 @@ async function maybeRunBot(){
   const cp=currentPlayer();
   if(cp&&cp.isBot){botActing=true;await botDelay();const f=await loadRoom(code);if(f)state=f;const cp2=currentPlayer();if(cp2&&cp2.isBot&&cp2.id===cp.id&&state.phase==='playing'&&!state.pendingBattle&&!state.pendingColonyChoice)await runBotTurn(cp2);botActing=false;}
 }
-// FIX سرعت: poll هر 800ms به جای 1500ms
 setInterval(maybeRunBot,800);
 
-/* ======= POLLING ======= */
+/* ===== POLLING ===== */
 function startPolling(){
   if(pollTimer)clearInterval(pollTimer);
-  // FIX سرعت: poll هر 800ms
   pollTimer=setInterval(async()=>{
     if(!code)return;
     const fresh=await loadRoom(code);
@@ -670,18 +712,18 @@ function startPolling(){
   },800);
 }
 
-/* ======= GAME RENDER ======= */
+/* ===== GAME RENDER ===== */
 function renderGame(){
   if(state.phase==='ended')return renderWinner();
   const wrap=document.createElement('div');
   const cur=currentPlayer();
-  const remaining=Math.max(0,TURN_SECONDS-Math.floor((Date.now()-(state.turnStartedAt||Date.now()))/1000));
+  const rem=Math.max(0,TURN_SECONDS-Math.floor((Date.now()-(state.turnStartedAt||Date.now()))/1000));
   const top=el(`<div class="top-bar">
     <div class="turn-banner"><div class="dot" style="background:${cur.color}"></div>
       <div><b>${isMyTurn()?'نوبت توست!':'نوبت: '+cur.name}</b>
         <div class="small">${state.phase==='capital-pick'?'⏳ انتخاب پایتخت':'نوبت '+state.turnCount+' — دور '+(state.roundNumber||1)+' — کد: '+code}</div>
       </div>
-      ${state.phase==='playing'?`<div class="timer-badge ${remaining<=10?'warn':''}" id="timerBadge">⏱️ <span id="turnTimerNum">${remaining}</span>ث</div>`:''}
+      ${state.phase==='playing'?`<div class="timer-badge ${rem<=10?'warn':''}" id="timerBadge">⏱️ <span id="turnTimerNum">${rem}</span>ث</div>`:''}
     </div>
     <div class="players-strip" id="pstrip"></div>
     <button class="btn" id="leaveBtn" style="font-size:12px;padding:8px 12px;">🔁 خروج</button>
@@ -690,19 +732,18 @@ function renderGame(){
   const strip=top.querySelector('#pstrip');
   state.players.forEach((p,i)=>{
     strip.appendChild(el(`<div class="player-chip ${!p.alive?'dead':''} ${i===state.currentPlayerIndex&&state.phase==='playing'?'current':''}">
-      <div class="dot" style="background:${p.color}"></div>${p.name} (${cityCount(p.id)})${p.colonyOf?' ⛓️'+p.colonyTurnsLeft:''}</div>`));
+      <div class="dot" style="background:${p.color}"></div>${p.name}(${cityCount(p.id)})${p.colonyOf?' ⛓️'+p.colonyTurnsLeft:''}${p.pendingCapitalMove?' 🏛️↗️':''}</div>`));
   });
   wrap.appendChild(top);
   const layout=el(`<div class="layout"></div>`);
   layout.appendChild(renderMap());
   layout.appendChild(renderSidePanel());
   wrap.appendChild(layout);
-  wrap.appendChild(el(`<div class="footnote">🪶 قوانین: هر کشور ۵ سرزمین دارد. پایتخت را خودت انتخاب می‌کنی (۲ دقیقه فرصت). ساخت قلعه ۲ دور کامل طول می‌کشد. اگر پایتخت سقوط کند: مستعمره یا انحلال. هر نوبت ${TURN_SECONDS} ثانیه.</div>`));
-  renderModals(wrap);
-  return wrap;
+  wrap.appendChild(el(`<div class="footnote">🪶 قوانین: هر بازیکن ۵ سرزمین دارد. پایتخت را خودت انتخاب می‌کنی. حمله فقط به همسایه‌های مجاور. بازیکن منحل‌شده نمی‌تواند دفاع کند — شهرهایش آزاد و قابل تصرف هستند. ساخت قلعه: ۲ دور؛ در هر نوبت فقط یک ساخت‌وساز فعال. انتقال پایتخت: ۱ دور. هر نوبت ${TURN_SECONDS} ثانیه.</div>`));
+  renderModals(wrap);return wrap;
 }
 
-/* ======= MAP RENDER ======= */
+/* ===== MAP RENDER ===== */
 function lightenColor(h,a){const n=parseInt(h.slice(1),16),r=Math.min(255,(n>>16)+a),g=Math.min(255,((n>>8)&255)+a),b=Math.min(255,(n&255)+a);return'#'+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1);}
 function darkenColor(h,a){const n=parseInt(h.slice(1),16),r=Math.max(0,(n>>16)-a),g=Math.max(0,((n>>8)&255)-a),b=Math.max(0,(n&255)-a);return'#'+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1);}
 
@@ -716,112 +757,101 @@ function isSelectableCity(c){
     return c.ownerId===myId&&!c.construction&&!c.hasCastle&&!state.usedBuildThisTurn&&!alreadyBuilding;
   }
   if(ui.actionMode==='gift-src')return c.ownerId===myId;
+  if(ui.actionMode==='capMove-src'){
+    const me=playerById(myId);return c.ownerId===myId&&!c.isCapital&&!me.pendingCapitalMove&&!state.usedCapMoveThisTurn;
+  }
   return false;
 }
 
 function renderMap(){
-  const SVG_W=750,SVG_H=520;
-  // ساخت SVG — paths اول، labels بعد (FIX: labels همیشه روی paths)
-  let pathsSVG='',labelsSVG='';
-  // defs یکبار
+  const SVG_W=800,SVG_H=545;
   let defsSVG=`<defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#d4c9a8"/><stop offset="100%" stop-color="#c2b68e"/>
+    <linearGradient id="bgLand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d8cca8"/><stop offset="100%" stop-color="#c8ba90"/>
     </linearGradient>
-    <filter id="ts" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="rgba(30,20,5,0.45)"/>
+    <filter id="ts" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="rgba(30,18,5,0.5)"/>
     </filter>
   </defs>
-  <rect width="${SVG_W}" height="${SVG_H}" fill="url(#bgGrad)" rx="14"/>`;
+  <rect width="${SVG_W}" height="${SVG_H}" fill="url(#bgLand)" rx="14"/>`;
 
-  // gradient defs برای هر سرزمین
+  let pathsSVG='',labelsSVG='';
+
   state.cities.forEach(city=>{
     const owner=playerById(city.ownerId);
     const base=owner?owner.color:'#9c9080';
     const gid='g_'+city.id.replace(/\W/g,'_');
     defsSVG+=`<linearGradient id="${gid}" x1="0%" y1="0%" x2="70%" y2="100%">
-      <stop offset="0%" stop-color="${lightenColor(base,35)}"/>
-      <stop offset="100%" stop-color="${darkenColor(base,15)}"/>
+      <stop offset="0%" stop-color="${lightenColor(base,38)}"/>
+      <stop offset="100%" stop-color="${darkenColor(base,18)}"/>
     </linearGradient>`;
-  });
-
-  // مرحله ۱: paths
-  state.cities.forEach(city=>{
-    const owner=playerById(city.ownerId);
-    const gid='g_'+city.id.replace(/\W/g,'_');
     const sel=isSelectableCity(city),selected=ui.selectedCity===city.id;
     const myP=playerById(myId);
-    const isMyCapPicked=myP&&myP.capitalCityId===city.id;
-    pathsSVG+=`<path class="territory-path${sel?' selectable':''}${selected?' selected':''}"
-      data-city="${city.id}" d="${city.mapPath}"
-      fill="url(#${gid})" filter="url(#ts)"
-      ${isMyCapPicked?'stroke-width="5" stroke="#ffe87a"':''}/>`;
-  });
+    const isMyCapSelected=myP&&myP.capitalCityId===city.id;
+    const isPendingMove=myP&&myP.pendingCapitalMove&&myP.pendingCapitalMove.toCityId===city.id;
 
-  // مرحله ۲: labels (همه روی paths — با g جداگانه)
-  state.cities.forEach(city=>{
-    const owner=playerById(city.ownerId);
+    pathsSVG+=`<path class="territory-path${sel?' selectable':''}${selected?' selected':''}"
+      data-city="${city.id}" d="${city.mapPath}" fill="url(#${gid})" filter="url(#ts)"
+      ${isMyCapSelected?'stroke="#ffe87a" stroke-width="5"':''}
+      ${isPendingMove?'stroke="#aaffaa" stroke-width="4" stroke-dasharray="8,4"':''}/>`;
+
     const cx=city.mapCx,cy=city.mapCy;
     const roundsLeft=city.construction?Math.max(0,2-((state.roundNumber||1)-city.construction.startRound)):0;
     const icon=city.hasCastle?'🏰':city.construction?`⏳${roundsLeft}`:'';
+    // FIX: owner منحل‌شده با نشانه ☠
+    const ownerName=owner?(owner.alive?owner.name:'☠ '+owner.name):'—';
     labelsSVG+=`
-      <text class="t-name${city.isCapital?' is-capital':''}" x="${cx}" y="${cy-10}">${city.isCapital?'★ ':''}${city.mapName}</text>
-      <text class="t-owner" x="${cx}" y="${cy+7}">${owner?owner.name:'—'}</text>
-      ${icon?`<text class="t-icon" x="${cx}" y="${cy+22}">${icon}</text>`:''}
+      <text class="t-name${city.isCapital?' is-capital':''}" x="${cx}" y="${cy-12}">${city.isCapital?'★ ':''}${city.mapName}</text>
+      <text class="t-owner" x="${cx}" y="${cy+5}">${ownerName}</text>
+      ${icon?`<text class="t-icon" x="${cx}" y="${cy+20}">${icon}</text>`:''}
     `;
   });
 
-  // قطب‌نما
-  const compass=`<g transform="translate(720,30)">
-    <circle r="16" fill="rgba(255,255,255,.2)" stroke="rgba(255,255,255,.4)" stroke-width="1"/>
-    <text text-anchor="middle" y="-6" font-size="8" fill="rgba(255,255,255,.8)" font-family="sans-serif">N</text>
-    <polygon points="0,-12 2.5,-2 0,2 -2.5,-2" fill="rgba(220,60,40,.8)"/>
-    <polygon points="0,12 2.5,2 0,-2 -2.5,2" fill="rgba(255,255,255,.7)"/>
+  const compass=`<g transform="translate(770,28)">
+    <circle r="16" fill="rgba(80,60,30,.25)" stroke="rgba(80,60,30,.4)" stroke-width="1"/>
+    <text text-anchor="middle" y="-5" font-size="8" fill="rgba(60,40,10,.8)" font-family="sans-serif">N</text>
+    <polygon points="0,-12 2.5,-2 0,2 -2.5,-2" fill="rgba(180,40,30,.8)"/>
+    <polygon points="0,12 2.5,2 0,-2 -2.5,2" fill="rgba(80,60,30,.6)"/>
   </g>`;
+  const title=`<text x="12" y="20" font-family="Vazirmatn,sans-serif" font-size="12" font-weight="800" fill="rgba(70,50,20,.65)">🗺️ خاورمیانه و آسیای مرکزی</text>`;
 
-  const titleSVG=`<text x="12" y="20" font-family="Vazirmatn,sans-serif" font-size="12" font-weight="800" fill="rgba(80,60,30,.7)">🗺️ خاورمیانه و آسیای مرکزی</text>`;
-
-  const svgHtml=`<svg class="map-svg" viewBox="0 0 ${SVG_W} ${SVG_H}" xmlns="http://www.w3.org/2000/svg" style="border-radius:14px;">
-    ${defsSVG}
-    ${pathsSVG}
-    <g class="territory-labels-group">${labelsSVG}</g>
-    ${compass}${titleSVG}
+  const svgHtml=`<svg class="map-svg" viewBox="0 0 ${SVG_W} ${SVG_H}" xmlns="http://www.w3.org/2000/svg" style="border-radius:14px;overflow:visible;">
+    ${defsSVG}${pathsSVG}
+    <g class="labels-layer">${labelsSVG}</g>
+    ${compass}${title}
   </svg>`;
 
-  const mapDiv=document.createElement('div');mapDiv.className='map-card';mapDiv.style.position='relative';
-  mapDiv.innerHTML=svgHtml;
+  const mapDiv=document.createElement('div');mapDiv.className='map-card';
 
-  // overlay انتخاب پایتخت
+  // نوار بالایی انتخاب پایتخت (خارج از SVG — کلیک را بلاک نمی‌کند)
   if(state.phase==='capital-pick'){
     const me=playerById(myId);
     const remCap=Math.max(0,CAPITAL_PICK_SECONDS-Math.floor((Date.now()-(state.capitalPickStartedAt||Date.now()))/1000));
     const alreadyPicked=me&&me.capitalCityId;
-    const ov=document.createElement('div');ov.className='cap-pick-overlay';
-    ov.innerHTML=`<div class="cap-pick-msg">
-      ${alreadyPicked?`<div style="color:var(--ok);font-size:14px;">✅ پایتخت انتخاب شد!<br><b>${cityById(me.capitalCityId)?.mapName}</b><br><div class="small">منتظر بقیه...</div></div>`
-      :`<div style="color:var(--accent);font-size:15px;">🏰 روی یکی از سرزمین‌هایت کلیک کن تا پایتخت شود</div>`}
-      <div style="margin-top:8px;font-size:13px;">⏳ <span id="capTimerNum">${remCap}</span> ثانیه مانده</div>
-      <div class="cap-timer-bar"><div class="cap-timer-fill" id="capTimerFill" style="width:${remCap/CAPITAL_PICK_SECONDS*100}%"></div></div>
-      <div class="small" style="margin-top:8px;">${state.players.filter(p=>!p.isBot).map(p=>`${p.capitalCityId?'✅':'⏳'} ${p.name}`).join(' | ')}</div>
-    </div>`;
-    mapDiv.appendChild(ov);
+    const bar=document.createElement('div');bar.className='cap-pick-bar';
+    bar.innerHTML=`${alreadyPicked
+      ?`<span style="color:var(--ok)">✅ پایتخت: <b>${cityById(me.capitalCityId)?.mapName}</b> — منتظر بقیه...</span>`
+      :`<span style="color:var(--accent)">🏰 روی یکی از سرزمین‌هایت کلیک کن تا پایتخت شود</span>`}
+    &nbsp; ⏳ <span id="capTimerNum">${remCap}</span>ث
+    <div class="cap-timer-bar"><div class="cap-timer-fill" id="capTimerFill" style="width:${remCap/CAPITAL_PICK_SECONDS*100}%"></div></div>
+    <div class="small" style="margin-top:4px">${state.players.filter(p=>!p.isBot).map(p=>`${p.capitalCityId?'✅':'⏳'} ${p.name}`).join(' | ')}</div>`;
+    mapDiv.appendChild(bar);
   }
 
-  // event listeners
+  mapDiv.innerHTML+=svgHtml;
+
   mapDiv.querySelectorAll('[data-city]').forEach(el2=>{
     el2.style.cursor='pointer';
     el2.addEventListener('click',()=>{const cid=el2.getAttribute('data-city');if(cid)handleCityClick(cid);});
   });
 
-  // legend
   const leg=document.createElement('div');leg.className='map-legend';
   state.players.forEach(p=>{
     const it=document.createElement('div');it.className='legend-item';
-    it.innerHTML=`<div class="legend-dot" style="background:${p.color}"></div>${p.name} (${cityCount(p.id)})${p.capitalCityId?' ★':''}`;
+    it.innerHTML=`<div class="legend-dot" style="background:${p.color};${!p.alive?'opacity:.4':''}"></div>${p.alive?p.name:'<s>'+p.name+'</s>'} (${cityCount(p.id)})${p.capitalCityId?' ★':''}${p.pendingCapitalMove?' 🏛️':''}}`;
     leg.appendChild(it);
   });
   mapDiv.appendChild(leg);
-
   const outer=el(`<div class="map-wrap"></div>`);outer.appendChild(mapDiv);return outer;
 }
 
@@ -830,61 +860,75 @@ function handleCityClick(cid){
   // فاز انتخاب پایتخت
   if(state.phase==='capital-pick'){
     if(c.ownerId!==myId)return;
-    const me=playerById(myId);
-    if(me.capitalCityId)return; // قبلاً انتخاب کرده
-    // انتخاب پایتخت
+    const me=playerById(myId);if(me.capitalCityId)return;
     me.capitalCityId=cid;c.isCapital=true;
-    state.log.push({turn:0,text:'🏰 '+me.name+' شهر '+c.mapName+' را به‌عنوان پایتخت انتخاب کرد.'});
-    // بررسی همه انتخاب کردند
-    const allDone=allCapitalsChosen();
-    if(allDone)finishCapitalPick();
-    else pushState();
+    state.log.push({turn:0,text:'🏰 '+me.name+' شهر '+c.mapName+' را پایتخت کرد.'});
+    if(allCapitalsChosen())finishCapitalPick();else pushState();
     return;
   }
   if(ui.actionMode==='attack-src'&&c.ownerId===myId){ui.selectedCity=cid;ui.actionMode='attack-tgt';render();return;}
   if(ui.actionMode==='attack-tgt'){
     const src=cityById(ui.selectedCity);
     if(!attackTargets(src).some(t=>t.id===cid))return;
-    if(c.ownerId===null)doNeutralAttack(ui.selectedCity,cid);
+    if(!c.ownerId)doNeutralAttack(ui.selectedCity,cid);
     else declareAttack(ui.selectedCity,cid);
     return;
   }
   if(ui.actionMode==='build-src'&&c.ownerId===myId){startBuild(cid);return;}
   if(ui.actionMode==='gift-src'&&c.ownerId===myId){ui.giftFromCity=cid;ui.actionMode='gift-choose';render();return;}
+  if(ui.actionMode==='capMove-src'&&c.ownerId===myId){startCapitalMove(cid);return;}
 }
 
 function renderSidePanel(){
   const panel=el(`<div class="side-panel"></div>`);
   if(state.phase==='capital-pick'){
-    panel.appendChild(el(`<div class="card"><h3 class="display" style="font-size:15px;color:var(--accent);margin:0 0 8px">انتخاب پایتخت</h3>
-      <div class="small">روی نقشه یکی از سرزمین‌هایت را به‌عنوان پایتخت انتخاب کن. ۲ دقیقه فرصت داری. اگر همه زودتر انتخاب کنند، بازی زودتر شروع می‌شود.</div>
-      <div style="margin-top:10px;">
-        ${state.players.filter(p=>!p.isBot).map(p=>`<div style="display:flex;align-items:center;gap:6px;margin:4px 0"><div class="dot" style="background:${p.color}"></div>${p.name}: ${p.capitalCityId?'<b style="color:var(--ok)">✅ '+cityById(p.capitalCityId)?.mapName+'</b>':'<span style="color:var(--ink-soft)">در انتظار...</span>'}</div>`).join('')}
+    const me=playerById(myId);
+    panel.appendChild(el(`<div class="card"><h3 class="display" style="font-size:15px;color:var(--accent);margin:0 0 8px">🏰 انتخاب پایتخت</h3>
+      <div class="small">روی نقشه یکی از سرزمین‌هایت را کلیک کن. اگر همه زودتر انتخاب کنند، بازی شروع می‌شود.</div>
+      <div style="margin-top:10px">
+        ${state.players.filter(p=>!p.isBot).map(p=>`<div style="display:flex;align-items:center;gap:6px;margin:4px 0">
+          <div class="dot" style="background:${p.color}"></div>${p.name}:
+          ${p.capitalCityId?`<b style="color:var(--ok)">✅ ${cityById(p.capitalCityId)?.mapName}</b>`:'<span style="color:var(--ink-soft)">⏳ در انتظار...</span>'}
+        </div>`).join('')}
       </div>
     </div>`));
   }
   if(state.phase==='playing'){
-    if(state.pendingBattle)panel.appendChild(el(`<div class="banner-wait">⚔️ نبرد در جریان — منتظر پاسخ...</div>`));
+    if(state.pendingBattle)panel.appendChild(el(`<div class="banner-wait">⚔️ نبرد در جریان — منتظر پاسخ دفاعی...</div>`));
     if(state.pendingColonyChoice)panel.appendChild(el(`<div class="banner-wait">👑 سرنوشت پایتخت در حال تعیین...</div>`));
     if(isMyTurn()&&!state.pendingBattle){
-      const actions=el(`<div class="card"><h3 class="display" style="font-size:16px;margin:0 0 10px;color:var(--accent)">اقدامات نوبت</h3><div class="action-btns"></div></div>`);
-      const grid=actions.querySelector('.action-btns');
-      const atkBtn=el(`<button class="btn">⚔️ حمله</button>`);atkBtn.disabled=state.usedAttackThisTurn;atkBtn.onclick=()=>{ui.actionMode=ui.actionMode==='attack-src'?null:'attack-src';render();};
+      const me=playerById(myId);
       const alreadyBuilding=state.cities.some(x=>x.ownerId===myId&&x.construction);
-      const bldBtn=el(`<button class="btn" title="${alreadyBuilding?'تا پایان ساخت فعلی نمی‌توانی ساخت جدید شروع کنی':''}">🏰 قلعه${alreadyBuilding?' ⏳':''}</button>`);
+      const actions=el(`<div class="card"><h3 class="display" style="font-size:15px;margin:0 0 10px;color:var(--accent)">اقدامات نوبت</h3><div class="action-btns"></div></div>`);
+      const grid=actions.querySelector('.action-btns');
+      // حمله
+      const atkBtn=el(`<button class="btn">⚔️ حمله</button>`);
+      atkBtn.disabled=state.usedAttackThisTurn;
+      atkBtn.onclick=()=>{ui.actionMode=ui.actionMode==='attack-src'?null:'attack-src';render();};
+      // ساخت قلعه
+      const bldBtn=el(`<button class="btn" title="${alreadyBuilding?'ساخت‌وساز فعال دارید':''}">🏰 قلعه${alreadyBuilding?' ⏳':''}</button>`);
       bldBtn.disabled=state.usedBuildThisTurn||alreadyBuilding;
       bldBtn.onclick=()=>{ui.actionMode=ui.actionMode==='build-src'?null:'build-src';render();};
-      const gftBtn=el(`<button class="btn">🎁 هدیه</button>`);gftBtn.onclick=()=>{ui.actionMode=ui.actionMode==='gift-src'?null:'gift-src';render();};
-      const surBtn=el(`<button class="btn btn-danger">🏳️ تسلیم</button>`);surBtn.onclick=doSurrender;
-      grid.appendChild(atkBtn);grid.appendChild(bldBtn);grid.appendChild(gftBtn);grid.appendChild(surBtn);
-      const endBtn=el(`<button class="btn btn-gold" style="width:100%;margin-top:10px;">پایان نوبت ⏭️</button>`);endBtn.onclick=endTurn;
-      actions.appendChild(endBtn);
+      // هدیه
+      const gftBtn=el(`<button class="btn">🎁 هدیه</button>`);
+      gftBtn.onclick=()=>{ui.actionMode=ui.actionMode==='gift-src'?null:'gift-src';render();};
+      // انتقال پایتخت
+      const capBtn=el(`<button class="btn" title="انتقال پایتخت به شهر دیگر (۱ دور طول می‌کشد)">🏛️ انتقال پایتخت${me&&me.pendingCapitalMove?' ⏳':''}</button>`);
+      capBtn.disabled=state.usedCapMoveThisTurn||(me&&!!me.pendingCapitalMove)||!me?.capitalCityId;
+      capBtn.onclick=()=>{ui.actionMode=ui.actionMode==='capMove-src'?null:'capMove-src';render();};
+      // تسلیم
+      const surBtn=el(`<button class="btn btn-danger">🏳️ تسلیم</button>`);
+      surBtn.onclick=doSurrender;
+      grid.appendChild(atkBtn);grid.appendChild(bldBtn);grid.appendChild(gftBtn);grid.appendChild(capBtn);grid.appendChild(surBtn);
+      const endBtn=el(`<button class="btn btn-gold" style="width:100%;margin-top:10px;">پایان نوبت ⏭️</button>`);
+      endBtn.onclick=endTurn;actions.appendChild(endBtn);
       if(ui.actionMode)actions.appendChild(el(`<div class="hint">${modeHint()}</div>`));
       panel.appendChild(actions);
     }else if(!state.pendingBattle&&state.phase==='playing'){
       panel.appendChild(el(`<div class="card"><div class="small">منتظر نوبتت هستی. اگر کسی حمله کند، باید فوری دفاع کنی.</div></div>`));
     }
   }
+  // لاگ و چت
   const logCard=el(`<div class="card"></div>`);
   const tabs=el(`<div class="tabs"><div class="tab ${ui.activeTab==='log'?'active':''}" id="tl">رویدادها</div><div class="tab ${ui.activeTab==='chat'?'active':''}" id="tc">گفتگو</div></div>`);
   tabs.querySelector('#tl').onclick=()=>{ui.activeTab='log';render();};tabs.querySelector('#tc').onclick=()=>{ui.activeTab='chat';render();};
@@ -910,10 +954,11 @@ function renderSidePanel(){
 function escHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function modeHint(){
   if(ui.actionMode==='attack-src')return'روی یکی از سرزمین‌هایت (هایلایت طلایی) کلیک کن.';
-  if(ui.actionMode==='attack-tgt')return'حالا روی سرزمین دشمن مجاور کلیک کن.';
+  if(ui.actionMode==='attack-tgt')return'روی سرزمین دشمن مجاور کلیک کن.';
   if(ui.actionMode==='build-src')return'سرزمینی بدون قلعه و بدون ساخت‌وساز فعال انتخاب کن.';
   if(ui.actionMode==='gift-src')return'سرزمینی که می‌خواهی هدیه دهی را انتخاب کن.';
-  if(ui.actionMode==='gift-choose')return'گیرنده هدیه را انتخاب کن.';
+  if(ui.actionMode==='gift-choose')return'گیرنده را انتخاب کن.';
+  if(ui.actionMode==='capMove-src')return'شهری که می‌خواهی پایتخت جدید باشد را انتخاب کن. (۱ دور تأخیر دارد)';
   return'';
 }
 
@@ -927,9 +972,12 @@ function renderModals(wrap){
       RPS.forEach(o=>{const b=el(`<button class="rps-btn" title="${o.label}">${o.icon}</button>`);b.onclick=()=>submitBattleChoice('attacker',o.k);m.querySelector('#rr').appendChild(b);});
       wrap.appendChild(m);
     }else if(pb.defenderId===myId&&!pb.defenderChoice){
+      // FIX: اگر بازیکن منحل شده باشد، modal دفاع نمایش داده نمی‌شود
+      const defP=playerById(pb.defenderId);
+      if(!defP||!defP.alive)return;
       const tgt=cityById(pb.defenderCity),atkP=playerById(pb.attackerId);
       const m=el(`<div class="modal-bg"><div class="modal"><h3 class="display" style="color:var(--accent)">${atkP.name} حمله کرد!</h3>
-        <div class="small">${pb.stage===2?'قلعه تخریب شد. ':''}باید فوری دفاع کنی:</div><div class="rps-row" id="rr"></div></div></div>`);
+        <div class="small">${pb.stage===2?'قلعه تخریب شد. ':''}فوری دفاع کن:</div><div class="rps-row" id="rr"></div></div></div>`);
       RPS.forEach(o=>{const b=el(`<button class="rps-btn" title="${o.label}">${o.icon}</button>`);b.onclick=()=>submitBattleChoice('defender',o.k);m.querySelector('#rr').appendChild(b);});
       wrap.appendChild(m);
     }
@@ -938,14 +986,14 @@ function renderModals(wrap){
     const pc=state.pendingColonyChoice,defP=playerById(pc.defenderId),atkP=playerById(pc.attackerId);
     if(pc.defenderId===myId&&!pc.defenderDecision){
       const m=el(`<div class="modal-bg"><div class="modal"><h3 class="display" style="color:var(--danger)">پایتختت سقوط کرد!</h3>
-        <div class="small">مستعمره‌ی ${atkP.name} بشی (۵ نوبت) یا منحل بشی؟</div>
+        <div class="small">مستعمره‌ی ${atkP.name} بشی (۵ نوبت حمله نکنی) یا منحل بشی؟</div>
         <div class="btn-row" style="justify-content:center;margin-top:14px">
           <button class="btn btn-gold" id="bc">⛓️ مستعمره</button><button class="btn btn-danger" id="bd">💀 منحل</button>
         </div></div></div>`);
       m.querySelector('#bc').onclick=()=>submitColonyChoice('colony');m.querySelector('#bd').onclick=()=>submitColonyChoice('dissolve');wrap.appendChild(m);
     }else if(pc.defenderDecision==='colony'&&pc.attackerId===myId){
       const m=el(`<div class="modal-bg"><div class="modal"><h3 class="display" style="color:var(--accent)">${defP.name} می‌خواد مستعمره شه</h3>
-        <div class="small">قبول = ۵ نوبت بدون حمله. رد = منحل می‌شه.</div>
+        <div class="small">قبول = ۵ نوبت بدون حمله. رد = منحل و سرزمین‌هایش بی‌دفاع.</div>
         <div class="btn-row" style="justify-content:center;margin-top:14px">
           <button class="btn btn-gold" id="ba">✅ قبول</button><button class="btn btn-danger" id="br">❌ رد</button>
         </div></div></div>`);
@@ -957,8 +1005,7 @@ function renderModals(wrap){
     const m=el(`<div class="modal-bg"><div class="modal"><h3 class="display" style="color:var(--accent)">هدیه ${cityDisplayName(c)}</h3>
       <div class="btn-row" style="justify-content:center;flex-direction:column;align-items:stretch" id="gl"></div>
       <button class="btn btn-danger" id="gx" style="margin-top:10px">انصراف</button></div></div>`);
-    const gl=m.querySelector('#gl');
-    others.forEach(p=>{const b=el(`<button class="btn">${p.alive?p.name:'☠️ '+p.name+' (بازگرداندن)'}</button>`);b.onclick=()=>doGift(c.id,p.id);gl.appendChild(b);});
+    others.forEach(p=>{const b=el(`<button class="btn">${p.alive?p.name:'☠️ '+p.name+' (بازگرداندن)'}</button>`);b.onclick=()=>doGift(c.id,p.id);m.querySelector('#gl').appendChild(b);});
     m.querySelector('#gx').onclick=()=>{ui.actionMode=null;ui.giftFromCity=null;render();};wrap.appendChild(m);
   }
 }
@@ -966,17 +1013,14 @@ function renderModals(wrap){
 function startNewGameFlow(){
   try{if(code)localStorage.removeItem('myid-'+code);localStorage.removeItem('lastCode');}catch{}
   if(pollTimer)clearInterval(pollTimer);
-  code=null;myId=null;state=null;ui.setupName='';ui.setupCapital='';ui.setupColor=null;ui.joinCode='';
-  view='landing';render();
+  code=null;myId=null;state=null;ui.setupName='';ui.setupColor=null;ui.joinCode='';view='landing';render();
 }
 function renderWinner(){
   const w=state.winnerId?playerById(state.winnerId):null;
   const node=el(`<div class="card winner-screen"><div class="crown">👑</div>
     <h1 class="main-title">${w?w.name+' برنده شد!':'بازی بدون برنده پایان یافت'}</h1>
-    ${w?`<div class="small">پایتخت: ${w.capital||cityById(w.capitalCityId)?.mapName}</div>`:''}
-    <div class="btn-row" style="justify-content:center;margin-top:10px">
-      <button class="btn btn-gold" id="ngb">🎮 بازی جدید</button>
-    </div>
+    ${w?`<div class="small">پایتخت: ${cityById(w.capitalCityId)?.mapName||'—'}</div>`:''}
+    <div class="btn-row" style="justify-content:center;margin-top:10px"><button class="btn btn-gold" id="ngb">🎮 بازی جدید</button></div>
     <div class="log-box" style="margin:20px auto;max-width:420px;text-align:right">
       ${[...state.log].slice(-30).reverse().map(l=>`<div class="log-line">${l.text}</div>`).join('')}
     </div></div>`);
@@ -985,17 +1029,14 @@ function renderWinner(){
 
 async function tryAutoResume(){
   let lc;try{lc=localStorage.getItem('lastCode');}catch{return false;}
-  if(!lc)return false;
-  const sid=await loadMyId(lc);if(!sid)return false;
+  if(!lc)return false;const sid=await loadMyId(lc);if(!sid)return false;
   const s=await loadRoom(lc);if(!s)return false;
   if(!s.players.some(p=>p.id===sid))return false;
-  code=lc;myId=sid;state=s;
-  view=s.phase==='lobby'?'lobby':'game';startPolling();return true;
+  code=lc;myId=sid;state=s;view=s.phase==='lobby'?'lobby':'game';startPolling();return true;
 }
 function leaveSession(){
   try{if(code)localStorage.removeItem('myid-'+code);localStorage.removeItem('lastCode');}catch{}
-  if(pollTimer)clearInterval(pollTimer);
-  code=null;myId=null;state=null;view='landing';render();
+  if(pollTimer)clearInterval(pollTimer);code=null;myId=null;state=null;view='landing';render();
 }
 
 (async function init(){
@@ -1006,5 +1047,5 @@ function leaveSession(){
   render();
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a15dc570c9fe958a',t:'MTc4MzE2NDM0Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
