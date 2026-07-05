@@ -254,7 +254,29 @@ const SFX = (() => {
       }catch(e){}
     },
 
-    // 🕊️ هدیه / بازگشت — صدای لطیف
+    // 🤝 مساوی — دو نت متضاد که روی هم میان (حس تعلیق)
+    tie(){
+      try{
+        const ac=getCtx(),t=ac.currentTime;
+        // نت اول بالا میره
+        const o1=osc(ac,'sine',523); const g1=ac.createGain();
+        o1.frequency.setValueAtTime(523,t); o1.frequency.linearRampToValueAtTime(659,t+0.3);
+        g1.gain.setValueAtTime(0.35,t); g1.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+        o1.connect(g1); g1.connect(ac.destination);
+        o1.start(t); o1.stop(t+0.55);
+        // نت دوم پایین میره — حس تعارض
+        const o2=osc(ac,'sine',659); const g2=ac.createGain();
+        o2.frequency.setValueAtTime(659,t+0.05); o2.frequency.linearRampToValueAtTime(523,t+0.35);
+        g2.gain.setValueAtTime(0.3,t+0.05); g2.gain.exponentialRampToValueAtTime(0.001,t+0.55);
+        o2.connect(g2); g2.connect(ac.destination);
+        o2.start(t+0.05); o2.stop(t+0.58);
+        // یه تریل کوتاه سوال‌برانگیز
+        const o3=osc(ac,'triangle',440); const g3=ac.createGain();
+        g3.gain.setValueAtTime(0.2,t+0.5); g3.gain.exponentialRampToValueAtTime(0.001,t+0.9);
+        o3.connect(g3); g3.connect(ac.destination);
+        o3.start(t+0.5); o3.stop(t+0.95);
+      }catch(e){}
+    },
     gift(){
       try{
         const ac=getCtx(), t=ac.currentTime;
@@ -875,7 +897,7 @@ function resolveBattleStage(){
   const pb=state.pendingBattle,tgt=cityById(pb.defenderCity),w=rpsWinner(pb.attackerChoice,pb.defenderChoice);
   const atkP=playerById(pb.attackerId),defP=playerById(pb.defenderId);
   recordRps(pb.attackerId,pb.attackerChoice);recordRps(pb.defenderId,pb.defenderChoice);
-  if(w==='tie'){state.log.push({turn:state.turnCount,text:'🤝 مساوی! دوباره...'});pb.attackerChoice=null;pb.defenderChoice=null;return;}
+  if(w==='tie'){SFX.tie();state.log.push({turn:state.turnCount,text:'🤝 مساوی! دوباره...'});pb.attackerChoice=null;pb.defenderChoice=null;return;}
   const aw=w==='a';
   if(tgt.hasCastle&&pb.stage===1){
     if(aw){tgt.hasCastle=false;state.log.push({turn:state.turnCount,text:'🏰💥 قلعه تخریب شد! نبرد ادامه دارد...'});pb.stage=2;pb.attackerChoice=null;pb.defenderChoice=null;return;}
@@ -1488,5 +1510,5 @@ function leaveSession(){
   render();
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1677f962879b153',t:'MTc4MzI2NjM0Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1678f104dcd68c6',t:'MTc4MzI2Njk3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
